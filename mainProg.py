@@ -12,7 +12,7 @@ import os
 import shutil
 
 ##########################################################
-#####      Frames and Widgets:           #################
+#####      Constants         :           #################
 ##########################################################
 
 REVENUE = 3
@@ -23,27 +23,55 @@ OPERATINGCASH = 13
 ROIC = 38
 dsglob = []
 numbers = {}
-mainFilePath = "D:/Rule1/inv.xlsx"
+mainFilePath = "D:/Rule1/inv.xlsx" # need to be changed
+
+##########################################################
+#####      Frames and Widgets:           #################
+##########################################################
 
 root = tk.Tk()
 #root.title('Title')
 #root.iconbitmap('pathToImage')
-root.geometry('800x250')
+root.geometry('1200x600')
 root.grid_columnconfigure(0,weight=1)
-root.rowconfigure(0, weight=1)
-root.rowconfigure(1, weight=18)
-root.rowconfigure(2,weight=1)
-header = tk.Frame(root)
-content = tk.Frame(root)
-footer = tk.Frame(root)
-head = tk.Label(header, text="Welcome To StockStats")
-foot = tk.Label(footer, text="Copyright BS", anchor='s')
-head.pack()
-foot.pack()
 
-##########################################################
-#####             functions:             #################
-##########################################################
+###########################################################
+###############        Page Class      #################
+###########################################################
+class Page(tk.Frame):
+    def __init__(self,*args,**kwargs):
+        tk.Frame.__init__(self,*args,**kwargs)
+        self.rowconfigure(0, weight=1)
+        self.rowconfigure(1, weight=18)
+        self.rowconfigure(2, weight=1)
+        self.grid_columnconfigure(0,weight=1)
+        self.header = tk.Frame(self)
+        self.content = tk.Frame(self)
+        self.footer = tk.Frame(self)
+        head = tk.Label(self.header, text="StockAnalysis")
+        foot = tk.Label(self.footer, text="Copyright BS", anchor='s')
+        head.pack()
+        foot.pack()
+        self.header.grid(row=0)
+        self.content.grid(row=1)
+        self.footer.grid(row=2)
+    def show(self):
+        self.pack(fill=tk.BOTH, expand=1)
+    def hide(self):
+        self.pack_forget()
+
+
+######################################################################################
+###############                 functions:                           #################
+######################################################################################
+
+def findXlsFilesLocation():
+    return 0
+
+def findDownloadFilesLocation():
+    return 0
+
+
 
 def isCellEmpty(sheet,row,col):
     return sheet.cell_value(row,col) == ""
@@ -291,19 +319,24 @@ def calVal(epsGrowth,PE,currentEPS): # it comes as str fix it ben!!!
     # print("The MOS Price is: " + str(MOS))
 
 
+###########################################################
+###############     mainPage              #################
+###########################################################
+
 def mainView(ds):
     if(ds!=None):
         for b in ds:
             b.destroy()
     for b in dsglob:
         b.destroy()
-    option1 = tk.Button(content, text="Calculate Stock Data", command= lambda: stockData([option1,option2,option3]))
+    option1 = tk.Button(content, text="Calculate Stock Data", command= lambda: stockData([option1,option2,option3,option4,option5]))
     option2 = tk.Button(content, text="Calculate intrinsic value", command= lambda: intrinsicCal([option1,option2,option3]))
-    option3 = tk.Button(content, text="Exit", command=root.quit)
+    option3 = tk.Button(content,text="Settings", command= lambda: intrinsicCal([option1,option2,option3]))
+    option4 = tk.Button(content, text="About", command=root.quit)
+    option5 = tk.Button(content, text="Exit", command=root.quit)
     option1.grid(row=0,column=0,padx=10,pady=10)
     option2.grid(row=1, column=0, padx=10, pady=10)
     option3.grid(row=2, column=0, padx=10, pady=10)
-
 
 def stockData(ds):
     for b in ds:
@@ -317,6 +350,37 @@ def stockData(ds):
     back.grid(row=100,column=0,pady=10)
 
 
+
+###########################################################
+###############        mainPage           #################
+###########################################################
+
+mainPage = Page(root)
+
+###########################################################
+###############        StockDataPage      #################
+###########################################################
+
+stockDataPage = Page(root)
+
+###########################################################
+###############     calValuePage          #################
+###########################################################
+
+calValuePage = Page(root)
+
+###########################################################
+###############     SettingPage           #################
+###########################################################
+
+settingsPage = Page(root)
+
+###########################################################
+###############     AboutPage             #################
+###########################################################
+
+aboutPage = Page(root)
+
 ##########################################################
 #####      main program:                 #################
 ##########################################################
@@ -326,5 +390,4 @@ mainView(None)
 header.grid(row=0)
 content.grid(row=1)
 footer.grid(row=2)
-
 root.mainloop()
