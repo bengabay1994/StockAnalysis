@@ -84,10 +84,31 @@ def findDownloadFilesLocation():
     # TODO: Add Your Code Here.
     return 0
 
+def rule1Calculator(epsGrowth,PE,currentEPS):
+    # TODO: Add Your Code Here.
+    return 0
+
+def benGrahamOriginal(epsGrowth,PE,currentEPS):
+    # TODO: Add Your Code Here.
+    return 0
+
+def benGrahamUpdate(epsGrowth,PE,currentEPS):
+    # TODO: Add Your Code Here.
+    return 0
+
+def checkDataLocation():
+    # TODO: Add Your Code Here.
+    return 0
+
 def switchFrames(src,dest):
     src.hide()
     dest.show()
 
+def checkCalculatorInput(inputs):
+    for inp in inputs:
+        if(not(type(inp)==float or type(inp)==int)):
+            return False;
+    return True;
 
 
 
@@ -97,10 +118,11 @@ def onFocusEntry(event, entry):
         entry.delete(0,"end")
         entry.insert(0,'')
         entry.config(fg='black')
+
 def onFocusOut(event,entry,msg):
     if(entry.get()==''):
         entry.insert(0, msg)
-        entry.config(fg=''grey)
+        entry.config(fg='grey')
 
 
 def isCellEmpty(sheet,row,col):
@@ -220,7 +242,7 @@ def getBig5Numbers(stock):
     operatingCashFlow = createList(sheet, OPERATINGCASH)
     roic = createList(sheet, ROIC)
     if not isListsValid([revenue, eps, equity, freeCashFlow, operatingCashFlow, roic]):
-        lable = tk.Label(content,text="Not Enough Data to Calculate")
+        lable = tk.Label(stockDataPage.content,text="Not Enough Data to Calculate")
         lable.grid(row=1,column=0)
         dsglob.append(lable)
         return 0
@@ -233,11 +255,11 @@ def getBig5Numbers(stock):
     i1 = 0
     j1 = 0
     for key in numbers.keys():
-        tLabel = tk.Label(content, text=key + ":")
+        tLabel = tk.Label(stockDataPage.content, text=key + ":")
         tLabel.grid(row=1,column=i1%6)
         dsglob.append(tLabel)
         for key2 in numbers[key]:
-            t2Label = tk.Label(content,text=key2 + ": " + str(round((numbers[key])[key2]*100,4)))
+            t2Label = tk.Label(stockDataPage.content,text=key2 + ": " + str(round((numbers[key])[key2]*100,4)))
             t2Label.grid(row=2+j1%3,column=i1%6)
             dsglob.append(t2Label)
             j1 = j1+1
@@ -305,34 +327,19 @@ def changePlaceForTheFile(stock):
     shutil.move(src,dest)
 
 
-def intrinsicCal(ds):
-    for b in ds:
-        b.destroy()
-    back = tk.Button(content, text="Back", command=lambda: mainView([back,tEPS,tEPSGrowth,lEPS,lEPSGrowth,tPE,lPE,bCal]))
-    back.grid(row=4,column=0)
-    tEPS = tk.Entry(content, width=30, borderwidth=5)
-    tEPS.insert(0, "Current EPS")
-    tEPS.grid(row=0, column=1)
-    lEPS = tk.Label(content,text="Current EPS: ")
-    lEPS.grid(row=0,column=0)
-    tEPSGrowth = tk.Entry(content, width=30, borderwidth=5)
-    tEPSGrowth.insert(0, "EPS growth(as percentage)")
-    tEPSGrowth.grid(row=1,column=1)
-    lEPSGrowth = tk.Label(content, text="EPS Growth: ")
-    lEPSGrowth.grid(row=1,column=0)
-    tPE = tk.Entry(content, width=30, borderwidth=5)
-    tPE.insert(0, "PE")
-    tPE.grid(row=2, column=1)
-    lPE = tk.Label(content, text="PE: ")
-    lPE.grid(row=2, column=0)
-    bCal = tk.Button(content, text="Calculate Value", command=lambda: calVal((float(tEPSGrowth.get())/100)+1,float(tPE.get()),float(tEPS.get())))
-    bCal.grid(row=3,column=0, pady=5)
-
-def calVal(epsGrowth,PE,currentEPS): # it comes as str fix it ben!!!
+def calVal(epsGrowth,PE,currentEPS):
+    isGood = checkCalculatorInput({epsGrowth,PE,currentEPS})
+    if not isGood:
+        # TODO: Throw error message dialog to the screen.
+        return
+    epsGrowth = (float(epsGrowth)/100)+1
+    PE = float(PE)
+    currentEPS = float(currentEPS)
+    # TODO: Add ben graham two methods.
     IV = PE * currentEPS * pow(epsGrowth, 10) / 4
     MOS = IV/2
-    ivLabel = tk.Label(content,text="The intrinsic Value is: " + str(IV))
-    mosLabel = tk.Label(content, text="the MOS Price is: " + str(MOS))
+    ivLabel = tk.Label(calValuePage.content,text="The intrinsic Value is: " + str(IV))
+    mosLabel = tk.Label(calValuePage.content, text="the MOS Price is: " + str(MOS))
     ivLabel.grid(row=3,column=1)
     mosLabel.grid(row=4,column=1)
     dsglob.append(ivLabel)
@@ -349,21 +356,6 @@ def calVal(epsGrowth,PE,currentEPS): # it comes as str fix it ben!!!
     # print("The MOS Price is: " + str(MOS))
 
 
-###########################################################
-###############     mainPage              #################
-###########################################################
-
-
-def stockData(ds):
-    for b in ds:
-        b.destroy()
-    dataButton = tk.Button(content, text="Get Stock Data", command=lambda: getBig5Numbers(symbol.get()))
-    back = tk.Button(content, text="Back",command=lambda: mainView([dataButton,back,symbol]))
-    symbol = tk.Entry(content, width=20, borderwidth=5)
-    symbol.insert(0, "Enter Symbol")
-    symbol.grid(row=0, column=0)
-    dataButton.grid(row=0, column=1)
-    back.grid(row=100,column=0,pady=10)
 
 
 
@@ -381,6 +373,7 @@ option2.grid(row=1, column=0, padx=10, pady=10)
 option3.grid(row=2, column=0, padx=10, pady=10)
 option4.grid(row=3, column=0, padx=10, pady=10)
 option5.grid(row=4, column=0, padx=10, pady=10)
+mainPage.show()
 
 
 
@@ -391,8 +384,8 @@ option5.grid(row=4, column=0, padx=10, pady=10)
 dataButton = tk.Button(stockDataPage.content, text="Get Stock Data", command=lambda: getBig5Numbers(symbol.get()))
 back = tk.Button(stockDataPage.content, text="Back",command=lambda:switchFrames(stockDataPage,mainPage))
 symbol = tk.Entry(stockDataPage.content, width=20, borderwidth=5)
-symbol.bind('<FocusIn>', onFocusEntry(symbol))
-symbol.bind('<FocusOut>', onFocusOut(symbol,"Enter Symbol"))
+symbol.bind('<FocusIn>', onFocusEntry('<FocusIn>',symbol))
+symbol.bind('<FocusOut>', onFocusOut('<FocusOut>',symbol,"Enter Symbol"))
 symbol.grid(row=0,column=0)
 dataButton.grid(row=0,column=1)
 back.grid(row=100,column=0,pady=10)
@@ -401,21 +394,46 @@ back.grid(row=100,column=0,pady=10)
 ###############     calValuePage          #################
 ###########################################################
 
+back = tk.Button(calValuePage.content, text="Back", command=lambda: switchFrames(calValuePage,mainPage))
+entryValEps = tk.Entry(calValuePage.content, width=30, borderwidth=5)
+entryValEps.bind('<FocusIn>',onFocusEntry('<FocusIn>',entryValEps))
+entryValEps.bind('<FocusOut>',onFocusOut('<FocusOut>',entryValEps,"EPS..."))
+entryValEps.grid(row=0, column=1)
+labelValEps = tk.Label(calValuePage.content, text="Current EPS: ")
+labelValEps.grid(row=0, column=0)
+entryGrowthEps = tk.Entry(calValuePage.content, width=30, borderwidth=5)
+entryGrowthEps.bind('<FocusIn>',onFocusEntry('<FocusIn>',entryGrowthEps))
+entryGrowthEps.bind('<FocusOut>', onFocusOut('<FocusOut>',entryGrowthEps,"EPS Growth..."))
+entryGrowthEps.grid(row=1, column=1)
+labelGrowthEps = tk.Label(calValuePage.content, text="EPS Growth: ")
+labelGrowthEps.grid(row=1, column=0)
+entryPe = tk.Entry(calValuePage.content, width=30, borderwidth=5)
+entryPe.bind('<FocusIn>',onFocusEntry('<FocusIn>',entryPe))
+entryPe.bind('<FocusOut>',onFocusOut('<FocusOut>',entryPe,"PE..."))
+entryPe.grid(row=2, column=1)
+labelPe = tk.Label(calValuePage.content, text="Forword PE: ")
+labelPe.grid(row=2, column=0)
+bCal = tk.Button(calValuePage.content, text="Calculate Value",command=lambda: calVal(entryGrowthEps.get(),entryPe.get(),entryValEps.get()))
+bCal.grid(row=3, column=0, pady=5)
+back.grid(row=100, column=0)
 
 
 ###########################################################
 ###############     SettingPage           #################
 ###########################################################
 
-
+# TODO: Build The setting page
 
 ###########################################################
 ###############     AboutPage             #################
 ###########################################################
 
+# TODO: Build the AboutPage
 
 ##########################################################
 #####      main program:                 #################
 ##########################################################
+
+# TODO: Build the AboutPage
 
 root.mainloop()
