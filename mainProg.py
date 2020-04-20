@@ -25,15 +25,7 @@ dsglob = []
 numbers = {}
 mainFilePath = "D:/Rule1/inv.xlsx" # need to be changed
 
-##########################################################
-#####      Frames and Widgets:           #################
-##########################################################
 
-root = tk.Tk()
-#root.title('Title')
-#root.iconbitmap('pathToImage')
-root.geometry('1200x600')
-root.grid_columnconfigure(0,weight=1)
 
 ###########################################################
 ###############        Page Class      #################
@@ -60,17 +52,55 @@ class Page(tk.Frame):
     def hide(self):
         self.pack_forget()
 
+##########################################################
+#####      Frames and Widgets:           #################
+##########################################################
+
+root = tk.Tk()
+#root.title('Title')
+#root.iconbitmap('pathToImage')
+root.geometry('1200x600')
+root.grid_columnconfigure(0,weight=1)
+
+##########################################################
+#####      PagesDeclarations             #################
+##########################################################
+
+mainPage = Page(root)
+stockDataPage = Page(root)
+calValuePage = Page(root)
+settingsPage = Page(root)
+aboutPage = Page(root)
 
 ######################################################################################
 ###############                 functions:                           #################
 ######################################################################################
 
 def findXlsFilesLocation():
+    # TODO: Add Your Code Here.
     return 0
 
 def findDownloadFilesLocation():
+    # TODO: Add Your Code Here.
     return 0
 
+def switchFrames(src,dest):
+    src.hide()
+    dest.show()
+
+
+
+
+def onFocusEntry(event, entry):
+    """a function that gets called whenever entry is clicked"""
+    if entry.cget('fg')=='grey':
+        entry.delete(0,"end")
+        entry.insert(0,'')
+        entry.config(fg='black')
+def onFocusOut(event,entry,msg):
+    if(entry.get()==''):
+        entry.insert(0, msg)
+        entry.config(fg=''grey)
 
 
 def isCellEmpty(sheet,row,col):
@@ -323,20 +353,6 @@ def calVal(epsGrowth,PE,currentEPS): # it comes as str fix it ben!!!
 ###############     mainPage              #################
 ###########################################################
 
-def mainView(ds):
-    if(ds!=None):
-        for b in ds:
-            b.destroy()
-    for b in dsglob:
-        b.destroy()
-    option1 = tk.Button(content, text="Calculate Stock Data", command= lambda: stockData([option1,option2,option3,option4,option5]))
-    option2 = tk.Button(content, text="Calculate intrinsic value", command= lambda: intrinsicCal([option1,option2,option3]))
-    option3 = tk.Button(content,text="Settings", command= lambda: intrinsicCal([option1,option2,option3]))
-    option4 = tk.Button(content, text="About", command=root.quit)
-    option5 = tk.Button(content, text="Exit", command=root.quit)
-    option1.grid(row=0,column=0,padx=10,pady=10)
-    option2.grid(row=1, column=0, padx=10, pady=10)
-    option3.grid(row=2, column=0, padx=10, pady=10)
 
 def stockData(ds):
     for b in ds:
@@ -355,39 +371,51 @@ def stockData(ds):
 ###############        mainPage           #################
 ###########################################################
 
-mainPage = Page(root)
+option1 = tk.Button(mainPage.content, text="Calculate Stock Data", command=lambda:switchFrames(mainPage,stockDataPage))
+option2 = tk.Button(mainPage.content, text="Calculate intrinsic value", command=lambda:switchFrames(mainPage,calValuePage))
+option3 = tk.Button(mainPage.content,text="Settings", command=lambda:switchFrames(mainPage,settingsPage))
+option4 = tk.Button(mainPage.content, text="About", command=lambda:switchFrames(mainPage,aboutPage))
+option5 = tk.Button(mainPage.content, text="Exit", command=root.quit)
+option1.grid(row=0,column=0,padx=10,pady=10)
+option2.grid(row=1, column=0, padx=10, pady=10)
+option3.grid(row=2, column=0, padx=10, pady=10)
+option4.grid(row=3, column=0, padx=10, pady=10)
+option5.grid(row=4, column=0, padx=10, pady=10)
+
+
 
 ###########################################################
 ###############        StockDataPage      #################
 ###########################################################
 
-stockDataPage = Page(root)
+dataButton = tk.Button(stockDataPage.content, text="Get Stock Data", command=lambda: getBig5Numbers(symbol.get()))
+back = tk.Button(stockDataPage.content, text="Back",command=lambda:switchFrames(stockDataPage,mainPage))
+symbol = tk.Entry(stockDataPage.content, width=20, borderwidth=5)
+symbol.bind('<FocusIn>', onFocusEntry(symbol))
+symbol.bind('<FocusOut>', onFocusOut(symbol,"Enter Symbol"))
+symbol.grid(row=0,column=0)
+dataButton.grid(row=0,column=1)
+back.grid(row=100,column=0,pady=10)
 
 ###########################################################
 ###############     calValuePage          #################
 ###########################################################
 
-calValuePage = Page(root)
+
 
 ###########################################################
 ###############     SettingPage           #################
 ###########################################################
 
-settingsPage = Page(root)
+
 
 ###########################################################
 ###############     AboutPage             #################
 ###########################################################
 
-aboutPage = Page(root)
 
 ##########################################################
 #####      main program:                 #################
 ##########################################################
 
-
-mainView(None)
-header.grid(row=0)
-content.grid(row=1)
-footer.grid(row=2)
 root.mainloop()
