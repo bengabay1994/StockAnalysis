@@ -1,3 +1,6 @@
+##########################################################
+#####      Imports                       #################
+##########################################################
 import tkinter as tk
 from xlsxwriter import Workbook
 from tkinter import messagebox
@@ -10,9 +13,10 @@ import csv
 import time
 import os
 import shutil
+import getpass
 
 ##########################################################
-#####      Constants         :           #################
+#####      Constants                     #################
 ##########################################################
 
 REVENUE = 3
@@ -23,12 +27,15 @@ OPERATINGCASH = 13
 ROIC = 38
 dsglob = []
 numbers = {}
+DataFileName = ".data"
+numberOfSettingBrowse = 2
+settingBrowseNames = ["filesLocation","favStocksLocation"]
 mainFilePath = "D:/Rule1/inv.xlsx" # need to be changed
 
 
 
 ###########################################################
-###############        Page Class      #################
+###############        Page Class         #################
 ###########################################################
 class Page(tk.Frame):
     def __init__(self,*args,**kwargs):
@@ -96,9 +103,30 @@ def benGrahamUpdate(epsGrowth,PE,currentEPS):
     # TODO: Add Your Code Here.
     return 0
 
-def checkDataLocation():
+def getDataLocation():
+    if(checkIfFileDataExist()==False):
+        # TODO: Print some kind of error
+        return None
+    ans = {"filesLocation":'',"favStocksLocation":''}
+    i = 0
+    dataFile = open(DataFileName,'r')
+    for line in dataFile:
+        ans[i] = line.rstrip()
+        i += 1
+    dataFile.close()
+    return ans
+
+def checkIfFileDataExist():
+    # TODO: Add Your Code Here.
+    return False
+
+def createFileData():
     # TODO: Add Your Code Here.
     return 0
+
+def browseLocation(typeOfData):
+    # TODO: Add Your Code Here.
+    return ""
 
 def switchFrames(src,dest):
     src.hide()
@@ -422,7 +450,25 @@ back.grid(row=100, column=0)
 ###############     SettingPage           #################
 ###########################################################
 
+backSetting = tk.Button(settingsPage.content, text="Back", command=lambda: switchFrames(settingsPage,mainPage))
+stockFilesEntry = tk.Entry(settingsPage.content, width="60", borderwidth="5", state='disabled')
+stockFileLabel = tk.Label(settingsPage.content, text="stock data files location: ")
+stockFilesButton = tk.Button(settingsPage.content, text="browse", command=lambda: browseLocation(settingBrowseNames[0]))
+favStocksEntry = tk.Entry(settingsPage.content, width="60", borderwidth="5", state="disabled")
+favStocksLabel = tk.Label(settingsPage.content, text="favorite stocks location: ")
+favStocksButton = tk.Button(settingsPage.content, text="browse", command=lambda: browseLocation(settingBrowseNames[1]))
+
+loc = getDataLocation()
+# TODO: insert the places from the data file.
+stockFileLabel.grid(row=0,column=0)
+stockFilesEntry.grid(row=0,column=1)
+stockFilesButton.grid(row=0,column=2)
+favStocksLabel.grid(row=1,column=0)
+favStocksEntry.grid(row=1,column=1)
+favStocksButton.grid(row=1,column=2)
+backSetting.grid(row=100, column=0)
 # TODO: Build The setting page
+# TODO: If he change location the I should move the files to the new location.
 
 ###########################################################
 ###############     AboutPage             #################
