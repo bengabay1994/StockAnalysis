@@ -2,6 +2,7 @@
 #####      Imports                       #################
 ##########################################################
 import tkinter as tk
+from tkinter import filedialog
 from xlsxwriter import Workbook
 from tkinter import messagebox
 from selenium import webdriver as wb
@@ -63,6 +64,9 @@ class Page(tk.Frame):
 #####      Frames and Widgets:           #################
 ##########################################################
 
+if(os.path.isfile(DataFileName)==False):
+    f = open(DataFileName,'w+')
+    f.close()
 root = tk.Tk()
 #root.title('Title')
 #root.iconbitmap('pathToImage')
@@ -83,13 +87,9 @@ aboutPage = Page(root)
 ###############                 functions:                           #################
 ######################################################################################
 
-def findXlsFilesLocation():
-    # TODO: Add Your Code Here.
-    return 0
-
-def findDownloadFilesLocation():
-    # TODO: Add Your Code Here.
-    return 0
+def createDataFile():
+    f = open(DataFileName, 'w+')
+    f.close()
 
 def rule1Calculator(epsGrowth,PE,currentEPS):
     # TODO: Add Your Code Here.
@@ -104,29 +104,77 @@ def benGrahamUpdate(epsGrowth,PE,currentEPS):
     return 0
 
 def getDataLocation():
-    if(checkIfFileDataExist()==False):
-        # TODO: Print some kind of error
+    if(os.path.isfile(DataFileName)==False):
+        createDataFile()
         return None
-    ans = {"filesLocation":'',"favStocksLocation":''}
+    ans = {settingBrowseNames[0]:'',settingBrowseNames[1]:''}
     i = 0
     dataFile = open(DataFileName,'r')
     for line in dataFile:
-        ans[i] = line.rstrip()
+        ans[settingBrowseNames[i]] = line.rstrip()
         i += 1
     dataFile.close()
     return ans
 
-def checkIfFileDataExist():
-    # TODO: Add Your Code Here.
-    return False
+def writeFromData():
+    """ a function that print to the entry the locations that are in the .data file"""
+    loc = getDataLocation()
+    if(loc==None):
+        return
+    if(len(loc) == numberOfSettingBrowse):
+        stockFilesEntry.delete(0,'end')
+        stockFilesEntry.insert(0, loc[settingBrowseNames[0]])
+        favStocksEntry.delete(0,'end')
+        favStocksEntry.insert(0, loc[settingBrowseNames[1]])
+    elif(len(loc)==1):
+        stockFilesEntry.delete(0, 'end')
+        stockFilesEntry.insert(0, loc[settingBrowseNames[0]])
 
-def createFileData():
-    # TODO: Add Your Code Here.
-    return 0
+
+def moveLocation(oldLoc,newLoc):
+    src = oldLoc[1]+"inv.xlsx"
+    dest = newLoc[1]+"inv.xlsx"
+    if(os.path.isfile(src)==True and os.path.isfile(dest)==False):
+        shutil.move(src,dest)
+
 
 def browseLocation(typeOfData):
-    # TODO: Add Your Code Here.
-    return ""
+    """ a function that write to the .data file the locations of the files"""
+    dir = filedialog.askdirectory()
+    if (not dir == ''):
+        dir += '\n'
+    else:
+        return
+    if(os.path.isfile(DataFileName) == False):
+        f = open(DataFileName, 'w+')
+        f.write(dir)
+    else:
+        fileToRead = open(DataFileName,'r')
+        numOfLines = 0
+        for l in fileToRead:
+            numOfLines = numOfLines+1
+        lines = []
+        fileToRead.close()
+        fileToRead = open(DataFileName,'r')
+        for line in fileToRead:
+            lines.append(line)
+        fileToRead.close()
+        newLines = []
+        fileToWrite = open(DataFileName,'w')
+        for count in range(numOfLines):
+            newLines.append(lines[count])
+        for count in range(numOfLines,numberOfSettingBrowse):
+            newLines.append("\n")
+        if(typeOfData==settingBrowseNames[0]):
+            newLines[0] = dir
+        elif(typeOfData==settingBrowseNames[1]):
+            newLines[1] = dir
+        for line in newLines:
+            fileToWrite.write(line)
+        fileToWrite.close()
+        if(numOfLines>=2):
+            moveLocation(lines,newLines)
+    writeFromData()
 
 def switchFrames(src,dest):
     src.hide()
@@ -137,8 +185,6 @@ def checkCalculatorInput(inputs):
         if(not(type(inp)==float or type(inp)==int)):
             return False;
     return True;
-
-
 
 def onFocusEntry(event, entry):
     """a function that gets called whenever entry is clicked"""
@@ -457,9 +503,7 @@ stockFilesButton = tk.Button(settingsPage.content, text="browse", command=lambda
 favStocksEntry = tk.Entry(settingsPage.content, width="60", borderwidth="5", state="disabled")
 favStocksLabel = tk.Label(settingsPage.content, text="favorite stocks location: ")
 favStocksButton = tk.Button(settingsPage.content, text="browse", command=lambda: browseLocation(settingBrowseNames[1]))
-
-loc = getDataLocation()
-# TODO: insert the places from the data file.
+writeFromData()
 stockFileLabel.grid(row=0,column=0)
 stockFilesEntry.grid(row=0,column=1)
 stockFilesButton.grid(row=0,column=2)
@@ -468,7 +512,7 @@ favStocksEntry.grid(row=1,column=1)
 favStocksButton.grid(row=1,column=2)
 backSetting.grid(row=100, column=0)
 # TODO: Build The setting page
-# TODO: If he change location the I should move the files to the new location.
+# TODO: If he change location then I should move the files to the new location.
 
 ###########################################################
 ###############     AboutPage             #################
