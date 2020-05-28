@@ -32,6 +32,7 @@ DataFileName = ".data"
 numberOfSettingBrowse = 2
 settingBrowseNames = ["filesLocation","favStocksLocation"]
 mainFilePath = "D:/Rule1/inv.xlsx" # need to be changed
+CurrentAAABondYield = 2.41
 
 
 
@@ -92,19 +93,21 @@ def createDataFile():
     f.close()
 
 def rule1Calculator(epsGrowth,PE,currentEPS):
-    # TODO: Add Your Code Here.
-    return 0
+    if(epsGrowth<0 or PE<0 or currentEPS<0):
+        return 0
+    return PE*currentEPS*pow(epsGrowth,10)/4
 
-def benGrahamOriginal(epsGrowth,PE,currentEPS):
-    # TODO: Add Your Code Here.
-    return 0
+def benGrahamOriginal(epsGrowth,currentEPS):
+    if (epsGrowth < 0 or currentEPS < 0):
+        return 0
+    return (currentEPS * (8.5 + 2 * epsGrowth) * 4.4) / CurrentAAABondYield
 
-def benGrahamUpdate(epsGrowth,PE,currentEPS):
-    # TODO: Add Your Code Here.
-    return 0
+def benGrahamUpdate(epsGrowth,currentEPS):
+    if(epsGrowth<0 or currentEPS < 0):
+        return 0
+    return (currentEPS*(7+epsGrowth)*4.4)/CurrentAAABondYield
 
 def getDataLocation():
-    # TODO: Change to fit new data format
     if(os.path.isfile(DataFileName)==False):
         createDataFile()
         return None
@@ -114,11 +117,20 @@ def getDataLocation():
     for line in dataFile:
         ans[settingBrowseNames[i]] = line.rstrip()
         i += 1
+        if i>= numberOfSettingBrowse:
+            break
     dataFile.close()
     return ans
 
+def isDataLocValid():
+    dataFile = open(DataFileName,'r')
+    for line in dataFile:
+        if(os.path.isdir(line.rstrip())):
+            continue
+        return False
+    return True
+
 def writeFromData():
-    # TODO: Change to fit new data format
     """ a function that print to the entry the locations that are in the .data file"""
     loc = getDataLocation()
     if(loc==None):
@@ -142,12 +154,12 @@ def moveLocation(oldLoc,newLoc):
 
 
 def saveLocToDataFile(locList):
-    # TODO: Maybe change to fit new data format
     for i,loc in enumerate(locList,1):
-        if(not os.path.isdir(loc.rstrip())):
+        if((not os.path.isdir(loc.rstrip())) and not loc.rstrip()==""):
             raise OSError("directory of the entry number " + str(i) + " does not exist")
     fileToWrite = open(DataFileName,'w')
     for loc in locList:
+        loc = loc.rstrip() + '\n'
         fileToWrite.write(loc)
     fileToWrite.close()
 
@@ -160,7 +172,6 @@ def saveLocToDataFileWrapper(locList):
     saveButton["state"]=tk.DISABLED
 
 def browseLocation(typeOfData):
-    # TODO: Change to fit new Data format
     """ a function that write to the .data file the locations of the files"""
     dir = filedialog.askdirectory()
     if (not dir == ''):
@@ -193,7 +204,7 @@ def browseLocation(typeOfData):
         try:
             saveLocToDataFile(newLines)
         except OSError as err:
-            print("Error: ",err)
+            messagebox.showerror("ERROR", err)
             return
         if(numOfLines>=2):
             moveLocation(lines,newLines)
@@ -207,21 +218,23 @@ def switchFrames(src,dest):
 
 def checkCalculatorInput(inputs):
     for inp in inputs:
-        if(not(type(inp)==float or type(inp)==int)):
+        try:
+            float(inp)
+        except:
             return False;
     return True;
 
-def onFocusEntry(event, entry):
+def onFocusEntry(event):
     """a function that gets called whenever entry is clicked"""
-    if entry.cget('fg')=='grey':
-        entry.delete(0,"end")
-        entry.insert(0,'')
-        entry.config(fg='black')
+    if event.widget.cget('fg')=='grey':
+        event.widget.delete(0,"end")
+        event.widget.insert(0,'')
+        event.widget.config(fg='black')
 
-def onFocusOut(event,entry,msg):
-    if(entry.get()==''):
-        entry.insert(0, msg)
-        entry.config(fg='grey')
+def onFocusOut(event,msg):
+    if(event.widget.get()==''):
+        event.widget.insert(0,msg)
+        event.widget.config(fg='grey')
 
 def onChangeLoc(event):
     ans = getDataLocation()
@@ -317,6 +330,32 @@ def calNumbers(data,avgOrGrowth):
         dic["one"] = calAverage(data[-2:-1], ROUND)
     return dic
 
+def printPriceAndMos(prices):
+    for i in range(6):
+        if i%2==1:
+            prices[i] = "MOS Price: " + str(prices[i])
+        else:
+            prices[i] = "Intrinsic Value: " + str(prices[i])
+    rule1Header = tk.Label(calValuePage.content,text="Prices by Rule 1:")
+    ben1Header = tk.Label(calValuePage.content,text="Prices by Ben Original:")
+    ben2Header = tk.Label(calValuePage.content,text="Prices by Ben Update:")
+    labelRule1Price = tk.Label(calValuePage.content,text=prices[0])
+    labelRule1Mos = tk.Label(calValuePage.content,text=prices[1])
+    labelBenOriginalPrice = tk.Label(calValuePage.content,text=prices[2])
+    labelBenOriginalMos = tk.Label(calValuePage.content,text=prices[3])
+    labelBenUpdatePrice = tk.Label(calValuePage.content,text=prices[4])
+    labelBenUpdateMos = tk.Label(calValuePage.content,text=prices[5])
+    rule1Header.grid(row="4", column="0")
+    ben1Header.grid(row="6",column="0")
+    ben2Header.grid(row="8",column="0")
+    labelRule1Price.grid(row="5",column="0")
+    labelRule1Mos.grid(row="5",column="1")
+    labelBenOriginalPrice.grid(row="7",column="0")
+    labelBenOriginalMos.grid(row="7",column="1")
+    labelBenUpdatePrice.grid(row="9",column="0")
+    labelBenUpdateMos.grid(row="9",column="1")
+
+
 # def calculateValue():
 #     currentEPS = float(input("Enter current EPS: "))
 #     EPSGrowth = float(input("Enter EPS growth (as percentage): "))
@@ -331,6 +370,9 @@ def calNumbers(data,avgOrGrowth):
 
 
 def getBig5Numbers(stock):
+    if(not isDataLocValid()):
+        messagebox.showerror("Error","Please enter valid locations inside the setting page.")
+        return
     isDownload = messagebox.askyesno("fromOnline", "Do you want to download new data?", )
     for b in dsglob:
         b.destroy()
@@ -438,20 +480,19 @@ def changePlaceForTheFile(stock):
 def calVal(epsGrowth,PE,currentEPS):
     isGood = checkCalculatorInput({epsGrowth,PE,currentEPS})
     if not isGood:
-        # TODO: Throw error message dialog to the screen.
+        messagebox.showerror("Erron","Invalid entries, Please insert valid numbers")
         return
     epsGrowth = (float(epsGrowth)/100)+1
     PE = float(PE)
     currentEPS = float(currentEPS)
-    # TODO: Add ben graham two methods.
-    IV = PE * currentEPS * pow(epsGrowth, 10) / 4
-    MOS = IV/2
-    ivLabel = tk.Label(calValuePage.content,text="The intrinsic Value is: " + str(IV))
-    mosLabel = tk.Label(calValuePage.content, text="the MOS Price is: " + str(MOS))
-    ivLabel.grid(row=3,column=1)
-    mosLabel.grid(row=4,column=1)
-    dsglob.append(ivLabel)
-    dsglob.append(mosLabel)
+    rule1Price = rule1Calculator(epsGrowth,PE,currentEPS)
+    rule1Mos = rule1Price/2
+    ben1Price = benGrahamOriginal(epsGrowth,currentEPS)
+    ben1Mos = ben1Price/2
+    ben2Price = benGrahamUpdate(epsGrowth,currentEPS)
+    ben2Mos = ben2Price/2
+    prices= [rule1Price,rule1Mos,ben1Price,ben1Mos,ben2Price,ben2Mos]
+    printPriceAndMos(prices)
 
 
     # currentEPS = float(input("Enter current EPS: "))
@@ -492,8 +533,8 @@ mainPage.show()
 dataButton = tk.Button(stockDataPage.content, text="Get Stock Data", command=lambda: getBig5Numbers(symbol.get()))
 back = tk.Button(stockDataPage.content, text="Back",command=lambda:switchFrames(stockDataPage,mainPage))
 symbol = tk.Entry(stockDataPage.content, width=20, borderwidth=5)
-symbol.bind('<FocusIn>', onFocusEntry('<FocusIn>',symbol))
-symbol.bind('<FocusOut>', onFocusOut('<FocusOut>',symbol,"Enter Symbol"))
+symbol.bind('<FocusIn>', onFocusEntry)
+symbol.bind('<FocusOut>', lambda event, param="Enter Symbol": onFocusOut(event,param))
 symbol.grid(row=0,column=0)
 dataButton.grid(row=0,column=1)
 back.grid(row=100,column=0,pady=10)
@@ -504,20 +545,20 @@ back.grid(row=100,column=0,pady=10)
 
 back = tk.Button(calValuePage.content, text="Back", command=lambda: switchFrames(calValuePage,mainPage))
 entryValEps = tk.Entry(calValuePage.content, width=30, borderwidth=5)
-entryValEps.bind('<FocusIn>',onFocusEntry('<FocusIn>',entryValEps))
-entryValEps.bind('<FocusOut>',onFocusOut('<FocusOut>',entryValEps,"EPS..."))
+entryValEps.bind('<FocusIn>',onFocusEntry)
+entryValEps.bind('<FocusOut>',lambda event, param="EPS...": onFocusOut(event,param))
 entryValEps.grid(row=0, column=1)
 labelValEps = tk.Label(calValuePage.content, text="Current EPS: ")
 labelValEps.grid(row=0, column=0)
 entryGrowthEps = tk.Entry(calValuePage.content, width=30, borderwidth=5)
-entryGrowthEps.bind('<FocusIn>',onFocusEntry('<FocusIn>',entryGrowthEps))
-entryGrowthEps.bind('<FocusOut>', onFocusOut('<FocusOut>',entryGrowthEps,"EPS Growth..."))
+entryGrowthEps.bind('<FocusIn>',onFocusEntry)
+entryGrowthEps.bind('<FocusOut>',lambda event, param="EPS Growth...": onFocusOut(event,param))
 entryGrowthEps.grid(row=1, column=1)
 labelGrowthEps = tk.Label(calValuePage.content, text="EPS Growth: ")
 labelGrowthEps.grid(row=1, column=0)
 entryPe = tk.Entry(calValuePage.content, width=30, borderwidth=5)
-entryPe.bind('<FocusIn>',onFocusEntry('<FocusIn>',entryPe))
-entryPe.bind('<FocusOut>',onFocusOut('<FocusOut>',entryPe,"PE..."))
+entryPe.bind('<FocusIn>',onFocusEntry)
+entryPe.bind('<FocusOut>',lambda event, param="PE...": onFocusOut(event,param))
 entryPe.grid(row=2, column=1)
 labelPe = tk.Label(calValuePage.content, text="Forword PE: ")
 labelPe.grid(row=2, column=0)
@@ -562,6 +603,5 @@ saveButton.grid(row=100, column=1)
 #####      main program:                 #################
 ##########################################################
 
-# TODO: Build the AboutPage
 
 root.mainloop()
