@@ -252,8 +252,24 @@ def isCellEmpty(sheet,row,col):
 def isCellNegative(sheet,row,col):
     return float(sheet.cell_value(row,col)) <= 0
 
+def checkWhichEmpty(sheet,row):
+    empty = []
+    for i in range(1,11):
+        if isCellEmpty(sheet,row,i):
+            empty.append(i)
+    return empty
+
+def checkWhichNegative(sheet,row):
+    negative = []
+    for i in range(1,11):
+        if isCellNegative(sheet,row,i):
+            negative.append(i)
+    return negative
+
 def createList(sheet,row):
     numList = []
+    empties = checkWhichEmpty(sheet,row)
+    negatives = checkWhichNegative(sheet,row)
     if isCellEmpty(sheet,row,2):
         return "Not enough Data!!"
     if not isCellEmpty(sheet,row,1):
@@ -382,8 +398,13 @@ def getBig5Numbers(stock):
             return -1
         changePlaceForTheFile(stock)
         convert_CSV_To_XLSX(stock)
-    fileName = "D:/StockXLSXFolder/" + stock + " Key Ratios.xlsx"
-    wb = xlrd.open_workbook(fileName)
+    loc = getDataLocation()
+    fileName = loc[settingBrowseNames[0]] + stock + " Key Ratios.xlsx"
+    try:
+        wb = xlrd.open_workbook(fileName)
+    except FileNotFoundError:
+        messagebox.showerror("ERROR","File with the stock data not found")
+        return
     sheet = wb.sheet_by_index(0)
     revenue = createList(sheet, REVENUE)
     eps = createList(sheet, EPS)
