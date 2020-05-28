@@ -104,6 +104,7 @@ def benGrahamUpdate(epsGrowth,PE,currentEPS):
     return 0
 
 def getDataLocation():
+    # TODO: Change to fit new data format
     if(os.path.isfile(DataFileName)==False):
         createDataFile()
         return None
@@ -117,6 +118,7 @@ def getDataLocation():
     return ans
 
 def writeFromData():
+    # TODO: Change to fit new data format
     """ a function that print to the entry the locations that are in the .data file"""
     loc = getDataLocation()
     if(loc==None):
@@ -138,7 +140,27 @@ def moveLocation(oldLoc,newLoc):
         shutil.move(src,dest)
 
 
+
+def saveLocToDataFile(locList):
+    # TODO: Maybe change to fit new data format
+    for i,loc in enumerate(locList,1):
+        if(not os.path.isdir(loc.rstrip())):
+            raise OSError("directory of the entry number " + str(i) + " does not exist")
+    fileToWrite = open(DataFileName,'w')
+    for loc in locList:
+        fileToWrite.write(loc)
+    fileToWrite.close()
+
+def saveLocToDataFileWrapper(locList):
+    try:
+        saveLocToDataFile(locList)
+    except OSError as err:
+        messagebox.showerror("ERROR",err)
+        return
+    saveButton["state"]=tk.DISABLED
+
 def browseLocation(typeOfData):
+    # TODO: Change to fit new Data format
     """ a function that write to the .data file the locations of the files"""
     dir = filedialog.askdirectory()
     if (not dir == ''):
@@ -160,7 +182,6 @@ def browseLocation(typeOfData):
             lines.append(line)
         fileToRead.close()
         newLines = []
-        fileToWrite = open(DataFileName,'w')
         for count in range(numOfLines):
             newLines.append(lines[count])
         for count in range(numOfLines,numberOfSettingBrowse):
@@ -169,12 +190,16 @@ def browseLocation(typeOfData):
             newLines[0] = dir
         elif(typeOfData==settingBrowseNames[1]):
             newLines[1] = dir
-        for line in newLines:
-            fileToWrite.write(line)
-        fileToWrite.close()
+        try:
+            saveLocToDataFile(newLines)
+        except OSError as err:
+            print("Error: ",err)
+            return
         if(numOfLines>=2):
             moveLocation(lines,newLines)
     writeFromData()
+
+
 
 def switchFrames(src,dest):
     src.hide()
@@ -198,6 +223,15 @@ def onFocusOut(event,entry,msg):
         entry.insert(0, msg)
         entry.config(fg='grey')
 
+def onChangeLoc(event):
+    ans = getDataLocation()
+    isChanged = False
+    if not ans[settingBrowseNames[0]]==stockFilesEntry.get():
+        isChanged=True
+    if not ans[settingBrowseNames[1]]==favStocksEntry.get():
+        isChanged=True
+    if isChanged:
+        saveButton["state"]=tk.NORMAL
 
 def isCellEmpty(sheet,row,col):
     return sheet.cell_value(row,col) == ""
@@ -497,13 +531,16 @@ back.grid(row=100, column=0)
 ###########################################################
 
 backSetting = tk.Button(settingsPage.content, text="Back", command=lambda: switchFrames(settingsPage,mainPage))
-stockFilesEntry = tk.Entry(settingsPage.content, width="60", borderwidth="5", state='disabled')
+stockFilesEntry = tk.Entry(settingsPage.content, width="60", borderwidth="5")
 stockFileLabel = tk.Label(settingsPage.content, text="stock data files location: ")
 stockFilesButton = tk.Button(settingsPage.content, text="browse", command=lambda: browseLocation(settingBrowseNames[0]))
-favStocksEntry = tk.Entry(settingsPage.content, width="60", borderwidth="5", state="disabled")
+favStocksEntry = tk.Entry(settingsPage.content, width="60", borderwidth="5")
 favStocksLabel = tk.Label(settingsPage.content, text="favorite stocks location: ")
 favStocksButton = tk.Button(settingsPage.content, text="browse", command=lambda: browseLocation(settingBrowseNames[1]))
+saveButton = tk.Button(settingsPage.content, text="save",command=lambda: saveLocToDataFileWrapper([stockFilesEntry.get(),favStocksEntry.get()]),state=tk.DISABLED)
 writeFromData()
+stockFilesEntry.bind('<KeyPress>',onChangeLoc)
+favStocksEntry.bind('<KeyPress>',onChangeLoc)
 stockFileLabel.grid(row=0,column=0)
 stockFilesEntry.grid(row=0,column=1)
 stockFilesButton.grid(row=0,column=2)
@@ -511,6 +548,7 @@ favStocksLabel.grid(row=1,column=0)
 favStocksEntry.grid(row=1,column=1)
 favStocksButton.grid(row=1,column=2)
 backSetting.grid(row=100, column=0)
+saveButton.grid(row=100, column=1)
 # TODO: Build The setting page
 # TODO: If he change location then I should move the files to the new location.
 
