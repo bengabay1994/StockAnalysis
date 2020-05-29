@@ -26,7 +26,6 @@ BOOKVALUE = 12
 FREECASHFLOW = 15
 OPERATINGCASH = 13
 ROIC = 38
-dsglob = []
 numbers = {}
 DataFileName = ".data"
 numberOfSettingBrowse = 2
@@ -270,23 +269,22 @@ def createList(sheet,row):
     numList = []
     empties = checkWhichEmpty(sheet,row)
     negatives = checkWhichNegative(sheet,row)
-    if isCellEmpty(sheet,row,2):
+    if(len(empties)>3):
         return "Not enough Data!!"
-    if not isCellEmpty(sheet,row,1):
-        if not isCellNegative(sheet,row,1):
-            numList.append(sheet.cell_value(row,1))
-        elif isCellNegative(sheet,row,2):
-            return "Not enough Data!!"
-        else:
-            numList.append(sheet.cell_value(row,2))
-    for cell in range(10):
-        numList.append(sheet.cell_value(row, cell+2))
+    for cell in range(11):
+        numList.append(sheet.cell_value(row, cell+1))
     return numList
 
 def calGrowth(start,end,years,rnd):
-    if(start<0):
+    if(type(start)==str or type(end)==str):
+        return None
+    if(start<0 and end>0):
         return 9.99
-    return round((pow(end/start,1/years)-1),rnd)
+    try:
+        ans = round((pow(end/start,1/years)-1),rnd)
+    except TypeError:
+        return -9.99
+    return ans
 
 def findrow(filePath,stock):
     wb = xlrd.open_workbook(filePath)
@@ -301,9 +299,15 @@ def findrow(filePath,stock):
 
 def calAverage(numbers,rnd):
     sum = 0
+    numOfEmpty = 0
     for num in numbers:
+        if(type(num)==str):
+            numOfEmpty += 1
+            continue
         sum += num
-    return round((sum/len(numbers))/100,rnd)
+    if(numOfEmpty/len(numbers)>0.2):
+        return None
+    return round((sum/(len(numbers)-numOfEmpty))/100,rnd)
 
 def saveStock(filePath, symbol, num, color):
     mainWB = openpyxl.load_workbook(filePath)
@@ -390,8 +394,6 @@ def getBig5Numbers(stock):
         messagebox.showerror("Error","Please enter valid locations inside the setting page.")
         return
     isDownload = messagebox.askyesno("fromOnline", "Do you want to download new data?", )
-    for b in dsglob:
-        b.destroy()
     if(isDownload==True):
         result = downloadStockData(stock)
         if(result==-1):
@@ -414,8 +416,7 @@ def getBig5Numbers(stock):
     roic = createList(sheet, ROIC)
     if not isListsValid([revenue, eps, equity, freeCashFlow, operatingCashFlow, roic]):
         lable = tk.Label(stockDataPage.content,text="Not Enough Data to Calculate")
-        lable.grid(row=1,column=0)
-        dsglob.append(lable)
+        lable.grid(row=1,column=0) #TODO: Need to change the location of the grid.
         return 0
     numbers["ROIC"] = calNumbers(roic, "AVERAGE")
     numbers["Equity"] = calNumbers(equity, "GROWTH")
@@ -423,16 +424,15 @@ def getBig5Numbers(stock):
     numbers["Revenue"] = calNumbers(revenue, "GROWTH")
     numbers["FreeCashFlow"] = calNumbers(freeCashFlow, "GROWTH")
     numbers["OperatingCashFlow"] = calNumbers(operatingCashFlow, "GROWTH")
+    #TODO: Complete this function and export the printing code the and outter function!
     i1 = 0
     j1 = 0
     for key in numbers.keys():
         tLabel = tk.Label(stockDataPage.content, text=key + ":")
         tLabel.grid(row=1,column=i1%6)
-        dsglob.append(tLabel)
         for key2 in numbers[key]:
             t2Label = tk.Label(stockDataPage.content,text=key2 + ": " + str(round((numbers[key])[key2]*100,4)))
             t2Label.grid(row=2+j1%3,column=i1%6)
-            dsglob.append(t2Label)
             j1 = j1+1
         i1 = i1+1
     result = messagebox.askyesno("SaveData","Do you want to save the stock?")
