@@ -249,6 +249,9 @@ def isCellEmpty(sheet,row,col):
     return sheet.cell_value(row,col) == ""
 
 def isCellNegative(sheet,row,col):
+    val = sheet.cell_value(row,col)
+    if val=="":
+        return False
     return float(sheet.cell_value(row,col)) <= 0
 
 def checkWhichEmpty(sheet,row):
@@ -277,7 +280,7 @@ def createList(sheet,row):
 
 def calGrowth(start,end,years,rnd):
     if(type(start)==str or type(end)==str):
-        return None
+        return "missing Data"
     if(start<0 and end>0):
         return 9.99
     try:
@@ -306,7 +309,7 @@ def calAverage(numbers,rnd):
             continue
         sum += num
     if(numOfEmpty/len(numbers)>0.2):
-        return None
+        return "missing Data"
     return round((sum/(len(numbers)-numOfEmpty))/100,rnd)
 
 def saveStock(filePath, symbol, num, color):
@@ -375,6 +378,56 @@ def printPriceAndMos(prices):
     labelBenUpdatePrice.grid(row="9",column="0")
     labelBenUpdateMos.grid(row="9",column="1")
 
+def printBig5Numbers(symbol,big5Numbers,data):
+
+    labelDataHeader = tk.Label(stockDataPage.content,text=symbol + " data:")
+    label2Header = tk.Label(stockDataPage.content, text="big 5 numbers:")
+    labelDataHeader.grid(row="1",column="5")
+    label2Header.grid(row="10",column="5")
+
+    for j in range(1,11):
+        temLabel = tk.Label(stockDataPage.content, text="YEAR_"+str(j) + "    ")
+        temLabel.grid(row="2",column=j)
+
+    ttmLabel = tk.Label(stockDataPage.content, text="TTM")
+    ttmLabel.grid(row="2",column="11")
+
+    i1 = 0
+    for i,category in enumerate(data.keys(),3):
+        tempLabel = tk.Label(stockDataPage.content, text=category+": ")
+        tempLabel.grid(row=i,column="0")
+        for d in data[category]:
+            temp2Label = tk.Label(stockDataPage.content, text=data[category][i1])
+            temp2Label.grid(row=i,column=1+i1)
+            i1 = (i1+1)%11
+
+    i2 = 0
+    j2 = 0
+    for key in numbers.keys():
+        tLabel = tk.Label(stockDataPage.content, text=key + ":")
+        tLabel.grid(row=12, column=i2 % 6)
+        for key2 in numbers[key]:
+            textStr=""
+            if(numbers[key][key2]=="missing Data"):
+                textStr="missing Data"
+            else:
+                textStr=key2 + ": " + str(round((numbers[key])[key2] * 100, 4))
+            t2Label = tk.Label(stockDataPage.content, text=textStr)
+            t2Label.grid(row=13 + j2 % 3, column=i2 % 6)
+            j2 = j2 + 1
+        i2 = i2 + 1
+
+
+
+    # revenue = createList(sheet, REVENUE)
+    # eps = createList(sheet, EPS)
+    # equity = createList(sheet, BOOKVALUE)
+    # freeCashFlow = createList(sheet, FREECASHFLOW)
+    # operatingCashFlow = createList(sheet, OPERATINGCASH)
+    # roic
+
+
+
 
 # def calculateValue():
 #     currentEPS = float(input("Enter current EPS: "))
@@ -401,7 +454,7 @@ def getBig5Numbers(stock):
         changePlaceForTheFile(stock)
         convert_CSV_To_XLSX(stock)
     loc = getDataLocation()
-    fileName = loc[settingBrowseNames[0]] + stock + " Key Ratios.xlsx"
+    fileName = loc[settingBrowseNames[0]] + "/" + stock + " Key Ratios.xlsx"
     try:
         wb = xlrd.open_workbook(fileName)
     except FileNotFoundError:
@@ -425,16 +478,17 @@ def getBig5Numbers(stock):
     numbers["FreeCashFlow"] = calNumbers(freeCashFlow, "GROWTH")
     numbers["OperatingCashFlow"] = calNumbers(operatingCashFlow, "GROWTH")
     #TODO: Complete this function and export the printing code the and outter function!
-    i1 = 0
-    j1 = 0
-    for key in numbers.keys():
-        tLabel = tk.Label(stockDataPage.content, text=key + ":")
-        tLabel.grid(row=1,column=i1%6)
-        for key2 in numbers[key]:
-            t2Label = tk.Label(stockDataPage.content,text=key2 + ": " + str(round((numbers[key])[key2]*100,4)))
-            t2Label.grid(row=2+j1%3,column=i1%6)
-            j1 = j1+1
-        i1 = i1+1
+    printBig5Numbers(stock,numbers,{"Revenue": revenue,"EPS":eps,"Equity":equity,"FreeCash": freeCashFlow,"OperatingCash": operatingCashFlow,"ROIC":roic})
+    # i1 = 0
+    # j1 = 0
+    # for key in numbers.keys():
+    #     tLabel = tk.Label(stockDataPage.content, text=key + ":")
+    #     tLabel.grid(row=1,column=i1%6)
+    #     for key2 in numbers[key]:
+    #         t2Label = tk.Label(stockDataPage.content,text=key2 + ": " + str(round((numbers[key])[key2]*100,4)))
+    #         t2Label.grid(row=2+j1%3,column=i1%6)
+    #         j1 = j1+1
+    #     i1 = i1+1
     result = messagebox.askyesno("SaveData","Do you want to save the stock?")
     if(result==True):
         res2 = messagebox.askyesno("SaveData","Do you want to save as green?",)
