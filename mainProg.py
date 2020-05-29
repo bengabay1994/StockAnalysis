@@ -30,8 +30,8 @@ numbers = {}
 DataFileName = ".data"
 numberOfSettingBrowse = 2
 settingBrowseNames = ["filesLocation","favStocksLocation"]
-mainFilePath = "D:/Rule1/inv.xlsx" # need to be changed
 CurrentAAABondYield = 2.41
+globLabel = []
 
 
 
@@ -120,6 +120,10 @@ def getDataLocation():
             break
     dataFile.close()
     return ans
+
+def destroyTempLabel():
+    for lab in globLabel:
+        lab.destroy()
 
 def isDataLocValid():
     dataFile = open(DataFileName,'r')
@@ -377,6 +381,16 @@ def printPriceAndMos(prices):
     labelBenOriginalMos.grid(row="7",column="1")
     labelBenUpdatePrice.grid(row="9",column="0")
     labelBenUpdateMos.grid(row="9",column="1")
+    globLabel.append(rule1Header)
+    globLabel.append(ben1Header)
+    globLabel.append(ben2Header)
+    globLabel.append(labelRule1Price)
+    globLabel.append(labelRule1Mos)
+    globLabel.append(labelBenOriginalPrice)
+    globLabel.append(labelBenOriginalMos)
+    globLabel.append(labelBenUpdatePrice)
+    globLabel.append(labelBenUpdateMos)
+
 
 def printBig5Numbers(symbol,big5Numbers,data):
 
@@ -384,21 +398,27 @@ def printBig5Numbers(symbol,big5Numbers,data):
     label2Header = tk.Label(stockDataPage.content, text="big 5 numbers:")
     labelDataHeader.grid(row="1",column="5")
     label2Header.grid(row="10",column="5")
+    globLabel.append(labelDataHeader)
+    globLabel.append(label2Header)
 
     for j in range(1,11):
         temLabel = tk.Label(stockDataPage.content, text="YEAR_"+str(j) + "    ")
         temLabel.grid(row="2",column=j)
+        globLabel.append(temLabel)
 
     ttmLabel = tk.Label(stockDataPage.content, text="TTM")
     ttmLabel.grid(row="2",column="11")
+    globLabel.append(ttmLabel)
 
     i1 = 0
     for i,category in enumerate(data.keys(),3):
         tempLabel = tk.Label(stockDataPage.content, text=category+": ")
         tempLabel.grid(row=i,column="0")
+        globLabel.append(tempLabel)
         for d in data[category]:
             temp2Label = tk.Label(stockDataPage.content, text=data[category][i1])
             temp2Label.grid(row=i,column=1+i1)
+            globLabel.append(temp2Label)
             i1 = (i1+1)%11
 
     i2 = 0
@@ -406,6 +426,7 @@ def printBig5Numbers(symbol,big5Numbers,data):
     for key in numbers.keys():
         tLabel = tk.Label(stockDataPage.content, text=key + ":")
         tLabel.grid(row=12, column=i2 % 6)
+        globLabel.append(tLabel)
         for key2 in numbers[key]:
             textStr=""
             if(numbers[key][key2]=="missing Data"):
@@ -414,6 +435,7 @@ def printBig5Numbers(symbol,big5Numbers,data):
                 textStr=key2 + ": " + str(round((numbers[key])[key2] * 100, 4))
             t2Label = tk.Label(stockDataPage.content, text=textStr)
             t2Label.grid(row=13 + j2 % 3, column=i2 % 6)
+            globLabel.append(t2Label)
             j2 = j2 + 1
         i2 = i2 + 1
 
@@ -443,6 +465,8 @@ def printBig5Numbers(symbol,big5Numbers,data):
 
 
 def getBig5Numbers(stock):
+    destroyTempLabel()
+    switchFrames(stockDataPage,stockDataPage)
     if(not isDataLocValid()):
         messagebox.showerror("Error","Please enter valid locations inside the setting page.")
         return
@@ -451,7 +475,11 @@ def getBig5Numbers(stock):
         result = downloadStockData(stock)
         if(result==-1):
             return -1
-        changePlaceForTheFile(stock)
+        try:
+            changePlaceForTheFile(stock)
+        except FileNotFoundError:
+            messagebox.showerror("ERROR", "Failed To Download the file please try again")
+            return
         convert_CSV_To_XLSX(stock)
     loc = getDataLocation()
     fileName = loc[settingBrowseNames[0]] + "/" + stock + " Key Ratios.xlsx"
@@ -470,6 +498,7 @@ def getBig5Numbers(stock):
     if not isListsValid([revenue, eps, equity, freeCashFlow, operatingCashFlow, roic]):
         lable = tk.Label(stockDataPage.content,text="Not Enough Data to Calculate")
         lable.grid(row=1,column=0) #TODO: Need to change the location of the grid.
+        globLabel.append(lable)
         return 0
     numbers["ROIC"] = calNumbers(roic, "AVERAGE")
     numbers["Equity"] = calNumbers(equity, "GROWTH")
@@ -479,18 +508,10 @@ def getBig5Numbers(stock):
     numbers["OperatingCashFlow"] = calNumbers(operatingCashFlow, "GROWTH")
     #TODO: Complete this function and export the printing code the and outter function!
     printBig5Numbers(stock,numbers,{"Revenue": revenue,"EPS":eps,"Equity":equity,"FreeCash": freeCashFlow,"OperatingCash": operatingCashFlow,"ROIC":roic})
-    # i1 = 0
-    # j1 = 0
-    # for key in numbers.keys():
-    #     tLabel = tk.Label(stockDataPage.content, text=key + ":")
-    #     tLabel.grid(row=1,column=i1%6)
-    #     for key2 in numbers[key]:
-    #         t2Label = tk.Label(stockDataPage.content,text=key2 + ": " + str(round((numbers[key])[key2]*100,4)))
-    #         t2Label.grid(row=2+j1%3,column=i1%6)
-    #         j1 = j1+1
-    #     i1 = i1+1
     result = messagebox.askyesno("SaveData","Do you want to save the stock?")
     if(result==True):
+        fileLoc = getDataLocation()
+        saveTo = fileLoc[settingBrowseNames[1]]+"/" + "inv.xlsx"
         res2 = messagebox.askyesno("SaveData","Do you want to save as green?",)
         res3 = messagebox.askyesno("SaveData","Do you want to save the cash?")
         if(res3==True):
@@ -498,9 +519,9 @@ def getBig5Numbers(stock):
         else:
             del numbers["FreeCashFlow"]
         if (res2 == True):
-            saveStock(mainFilePath, stock, numbers, "GREEN")
+            saveStock(saveTo, stock, numbers, "GREEN")
         else:
-            saveStock(mainFilePath, stock, numbers, "RED")
+            saveStock(saveTo, stock, numbers, "RED")
 
     return 1
 
@@ -553,14 +574,15 @@ def changePlaceForTheFile(stock):
 
 
 def calVal(epsGrowth,PE,currentEPS):
+    destroyTempLabel()
     isGood = checkCalculatorInput({epsGrowth,PE,currentEPS})
     if not isGood:
         messagebox.showerror("Erron","Invalid entries, Please insert valid numbers")
         return
-    epsGrowth = (float(epsGrowth)/100)+1
+    epsGrowth = float(epsGrowth)
     PE = float(PE)
     currentEPS = float(currentEPS)
-    rule1Price = rule1Calculator(epsGrowth,PE,currentEPS)
+    rule1Price = rule1Calculator((epsGrowth/100)+1,PE,currentEPS)
     rule1Mos = rule1Price/2
     ben1Price = benGrahamOriginal(epsGrowth,currentEPS)
     ben1Mos = ben1Price/2
