@@ -2,6 +2,8 @@
 #####      Imports                       #################
 ##########################################################
 import tkinter as tk
+from yahoo_fin import stock_info as si
+import yfinance as yf
 from tkinter import filedialog
 from xlsxwriter import Workbook
 from tkinter import messagebox
@@ -14,6 +16,7 @@ import csv
 import time
 import os
 import shutil
+import datetime
 import getpass
 
 ##########################################################
@@ -27,11 +30,13 @@ FREECASHFLOW = 15
 OPERATINGCASH = 13
 ROIC = 38
 numbers = {}
+stockListFile = None
 DataFileName = ".data"
 numberOfSettingBrowse = 2
 settingBrowseNames = ["filesLocation","favStocksLocation"]
 CurrentAAABondYield = 2.41
 globLabel = []
+firstRow = 16
 
 
 
@@ -82,6 +87,7 @@ stockDataPage = Page(root)
 calValuePage = Page(root)
 settingsPage = Page(root)
 aboutPage = Page(root)
+autoPage = Page(root)
 
 ######################################################################################
 ###############                 functions:                           #################
@@ -285,7 +291,7 @@ def createList(sheet,row):
 def calGrowth(start,end,years,rnd):
     if(type(start)==str or type(end)==str):
         return "missing Data"
-    if(start<0 and end>0):
+    if(start<=0 and end>0):
         return 9.99
     try:
         ans = round((pow(end/start,1/years)-1),rnd)
@@ -299,10 +305,10 @@ def findrow(filePath,stock):
     i = 0
     try:
         for i in range(300):
-            if not sheet.cell(i+16,1) or sheet.cell_value(i+16,1) == stock:
-                return i+16
+            if not sheet.cell(i+firstRow,1) or sheet.cell_value(i+firstRow,1) == stock:
+                return i+firstRow
     except:
-        return i+16
+        return i+firstRow
 
 def calAverage(numbers,rnd):
     sum = 0
@@ -323,9 +329,23 @@ def saveStock(filePath, symbol, num, color):
     redFill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
     greenFill = PatternFill(start_color="00FF00", end_color="00FF00", fill_type="solid")
     if color == "R":
+        ws.cell(column=1, row=saveRow, value=yf.Ticker(symbol).info['longName']).fill = redFill
         ws.cell(column=2,row=saveRow,value=symbol).fill = redFill
+        ws.cell(column=18, row=saveRow, value="").fill = redFill
+        ws.cell(column=19, row=saveRow, value="").fill = redFill
+        ws.cell(column=((len(num) - 1) * 3 + ((len(num["ROIC"]) - 1)) + 6),
+                row=saveRow,value=si.get_live_price(symbol)).fill = redFill
+        ws.cell(column=((len(num) - 1) * 3 + ((len(num["ROIC"]) - 1)) + 7),
+                row=saveRow, value=datetime.date.today()).fill = redFill
     else:
+        ws.cell(column=1, row=saveRow, value=yf.Ticker(symbol).info['longName']).fill = greenFill
         ws.cell(column=2, row=saveRow, value=symbol).fill = greenFill
+        ws.cell(column=18, row=saveRow, value="").fill = greenFill
+        ws.cell(column=19, row=saveRow, value="").fill = greenFill
+        ws.cell(column=((len(num) - 1) * 3 + ((len(num["ROIC"]) - 1)) + 6),
+                row=saveRow, value=si.get_live_price(symbol)).fill = greenFill
+        ws.cell(column=((len(num) - 1) * 3 + ((len(num["ROIC"]) - 1)) + 7),
+                row=saveRow, value=datetime.date.today()).fill = greenFill
     for i in range(len(num)):
         for j in range(len(num["ROIC"])):
             ws.cell(column=i*3+j+3, row=saveRow, value=list(num[list(num.keys())[i]].values())[j])
@@ -342,6 +362,150 @@ def isListsValid(lt):
         if l=="Not enough Data!!":
             return False
     return True
+
+def printUpdated():
+    tk.messagebox.showinfo(title="Update Info", message="Updated was successfully done!")
+    return 0
+
+def printFailedToUpdate(symbol):
+    tk.messagebox.showwarning(title="Failed to Update Stock", message=("Failed to update the Stock with symbol: " + symbol))
+
+def updateSymbol(symbol,sheet,startIndex):
+    result = downloadStockData(symbol)
+    if (result == -1):
+        printFailedToUpdate(symbol)
+        return -1
+    try:
+        changePlaceForTheFile(symbol)
+    except FileNotFoundError:
+        messagebox.showerror("ERROR", ("Failed To Download the file Of stock with symbol: " + symbol))
+        return -1
+    convert_CSV_To_XLSX(symbol)
+    loc = getDataLocation()
+    fileName = loc[settingBrowseNames[0]] + "/" + symbol + " Key Ratios.xlsx"
+    try:
+        wb = xlrd.open_workbook(fileName)
+    except FileNotFoundError:
+        messagebox.showerror("ERROR", ("File with the stock data not found of symbol: " + symbol))
+        return -1
+    sheetData = wb.sheet_by_index(0)
+    revenue = createList(sheetData, REVENUE)
+    eps = createList(sheetData, EPS)
+    equity = createList(sheetData, BOOKVALUE)
+    freeCashFlow = createList(sheetData, FREECASHFLOW)
+    operatingCashFlow = createList(sheetData, OPERATINGCASH)
+    roic = createList(sheetData, ROIC)
+    if not isListsValid([revenue, eps, equity, freeCashFlow, operatingCashFlow, roic]):
+        messagebox.showerror("ERROR", ("Not enough Data To Calculate for stock with symbol: " + symbol))
+        return -1
+    numbers["ROIC"] = calNumbers(roic, "AVERAGE")
+    numbers["Equity"] = calNumbers(equity, "GROWTH")
+    numbers["EPS"] = calNumbers(eps, "GROWTH")
+    numbers["Revenue"] = calNumbers(revenue, "GROWTH")
+
+    # TODO: Think what to do with operating cash flow or cash flow.
+    numbers["FreeCashFlow"] = calNumbers(freeCashFlow, "GROWTH")
+    numbers["OperatingCashFlow"] = calNumbers(operatingCashFlow, "GROWTH")
+    # TODO: Check if Green or Red.
+            saveStock(saveTo, stock, numbers, "GREEN")
+            saveStock(saveTo, stock, numbers, "RED")
+    return 1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def updateExcel():
+    dataFileLoc = getDataLocation()
+    excelLoc = dataFileLoc[settingBrowseNames[1]] + "\\" + "inv.xlsx"
+    invWB = openpyxl.open()
+    wb = xlrd.open_workbook(excelLoc)
+    sheet = wb.sheet_by_index(0)
+    startIndex = -1
+    try:
+        if not sheet.cell(startIndex,1)=='':
+            startIndex=firstRow
+    except:
+        startIndex = -1
+    if startIndex==-1:
+        printUpdated()
+        return
+    endIndex = firstRow
+    try:
+        for i in range(3000):
+            if sheet.cell(endIndex,1)=='':
+                endIndex += -1
+                break
+            else:
+                endIndex += 1
+    except:
+        endIndex += -1
+    while startIndex<=endIndex:
+        updateSymbol(symbol,sheet,startIndex)
+    printUpdated()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 def calNumbers(data,avgOrGrowth):
@@ -392,31 +556,31 @@ def printPriceAndMos(prices):
     globLabel.append(labelBenUpdateMos)
 
 
-def printBig5Numbers(symbol,big5Numbers,data):
+def printBig5Numbers(symbol,big5Numbers,data,pageToPrint):
 
-    labelDataHeader = tk.Label(stockDataPage.content,text=symbol + " data:")
-    label2Header = tk.Label(stockDataPage.content, text="big 5 numbers:")
+    labelDataHeader = tk.Label(pageToPrint.content,text=symbol + " data:")
+    label2Header = tk.Label(pageToPrint.content, text="big 5 numbers:")
     labelDataHeader.grid(row="1",column="5")
     label2Header.grid(row="10",column="5")
     globLabel.append(labelDataHeader)
     globLabel.append(label2Header)
 
     for j in range(1,11):
-        temLabel = tk.Label(stockDataPage.content, text="YEAR_"+str(j) + "    ")
+        temLabel = tk.Label(pageToPrint.content, text="YEAR_"+str(j) + "    ")
         temLabel.grid(row="2",column=j)
         globLabel.append(temLabel)
 
-    ttmLabel = tk.Label(stockDataPage.content, text="TTM")
+    ttmLabel = tk.Label(pageToPrint.content, text="TTM")
     ttmLabel.grid(row="2",column="11")
     globLabel.append(ttmLabel)
 
     i1 = 0
     for i,category in enumerate(data.keys(),3):
-        tempLabel = tk.Label(stockDataPage.content, text=category+": ")
+        tempLabel = tk.Label(pageToPrint.content, text=category+": ")
         tempLabel.grid(row=i,column="0")
         globLabel.append(tempLabel)
         for d in data[category]:
-            temp2Label = tk.Label(stockDataPage.content, text=data[category][i1])
+            temp2Label = tk.Label(pageToPrint.content, text=data[category][i1])
             temp2Label.grid(row=i,column=1+i1)
             globLabel.append(temp2Label)
             i1 = (i1+1)%11
@@ -424,7 +588,7 @@ def printBig5Numbers(symbol,big5Numbers,data):
     i2 = 0
     j2 = 0
     for key in numbers.keys():
-        tLabel = tk.Label(stockDataPage.content, text=key + ":")
+        tLabel = tk.Label(pageToPrint.content, text=key + ":")
         tLabel.grid(row=12, column=i2 % 6)
         globLabel.append(tLabel)
         for key2 in numbers[key]:
@@ -433,7 +597,7 @@ def printBig5Numbers(symbol,big5Numbers,data):
                 textStr="missing Data"
             else:
                 textStr=key2 + ": " + str(round((numbers[key])[key2] * 100, 4))
-            t2Label = tk.Label(stockDataPage.content, text=textStr)
+            t2Label = tk.Label(pageToPrint.content, text=textStr)
             t2Label.grid(row=13 + j2 % 3, column=i2 % 6)
             globLabel.append(t2Label)
             j2 = j2 + 1
@@ -464,9 +628,9 @@ def printBig5Numbers(symbol,big5Numbers,data):
 
 
 
-def getBig5Numbers(stock):
+def getBig5Numbers(stock,pageToPrint):
     destroyTempLabel()
-    switchFrames(stockDataPage,stockDataPage)
+    switchFrames(pageToPrint,pageToPrint)
     if(not isDataLocValid()):
         messagebox.showerror("Error","Please enter valid locations inside the setting page.")
         return
@@ -496,7 +660,7 @@ def getBig5Numbers(stock):
     operatingCashFlow = createList(sheet, OPERATINGCASH)
     roic = createList(sheet, ROIC)
     if not isListsValid([revenue, eps, equity, freeCashFlow, operatingCashFlow, roic]):
-        lable = tk.Label(stockDataPage.content,text="Not Enough Data to Calculate")
+        lable = tk.Label(pageToPrint.content,text="Not Enough Data to Calculate")
         lable.grid(row=1,column=0) #TODO: Need to change the location of the grid.
         globLabel.append(lable)
         return 0
@@ -506,12 +670,11 @@ def getBig5Numbers(stock):
     numbers["Revenue"] = calNumbers(revenue, "GROWTH")
     numbers["FreeCashFlow"] = calNumbers(freeCashFlow, "GROWTH")
     numbers["OperatingCashFlow"] = calNumbers(operatingCashFlow, "GROWTH")
-    #TODO: Complete this function and export the printing code the and outter function!
-    printBig5Numbers(stock,numbers,{"Revenue": revenue,"EPS":eps,"Equity":equity,"FreeCash": freeCashFlow,"OperatingCash": operatingCashFlow,"ROIC":roic})
+    printBig5Numbers(stock,numbers,{"Revenue": revenue,"EPS":eps,"Equity":equity,"FreeCash": freeCashFlow,"OperatingCash": operatingCashFlow,"ROIC":roic},pageToPrint)
     result = messagebox.askyesno("SaveData","Do you want to save the stock?")
     if(result==True):
         fileLoc = getDataLocation()
-        saveTo = fileLoc[settingBrowseNames[1]]+"/" + "inv.xlsx"
+        saveTo = fileLoc[settingBrowseNames[1]]+"\\" + "inv.xlsx"
         res2 = messagebox.askyesno("SaveData","Do you want to save as green?",)
         res3 = messagebox.askyesno("SaveData","Do you want to save the cash?")
         if(res3==True):
@@ -522,7 +685,6 @@ def getBig5Numbers(stock):
             saveStock(saveTo, stock, numbers, "GREEN")
         else:
             saveStock(saveTo, stock, numbers, "RED")
-
     return 1
 
 
@@ -601,24 +763,34 @@ def calVal(epsGrowth,PE,currentEPS):
     # print("The Intrinsic Value is: " + str(IV))
     # print("The MOS Price is: " + str(MOS))
 
+def autoStocksFromList():
+    stockListFile = open("stockList.txt","r")
+    for line in stockListFile:
+        if not line.startswith("#"):
+            getBig5Numbers(line.rstrip(),autoPage)
+    stockListFile.close()
 
-
-
+def cleanUpAutoPage():
+    switchFrames(autoPage,mainPage)
 
 ###########################################################
 ###############        mainPage           #################
 ###########################################################
 
-option1 = tk.Button(mainPage.content, text="Calculate Stock Data", command=lambda:switchFrames(mainPage,stockDataPage))
-option2 = tk.Button(mainPage.content, text="Calculate intrinsic value", command=lambda:switchFrames(mainPage,calValuePage))
-option3 = tk.Button(mainPage.content,text="Settings", command=lambda:switchFrames(mainPage,settingsPage))
-option4 = tk.Button(mainPage.content, text="About", command=lambda:switchFrames(mainPage,aboutPage))
-option5 = tk.Button(mainPage.content, text="Exit", command=root.quit)
-option1.grid(row=0,column=0,padx=10,pady=10)
-option2.grid(row=1, column=0, padx=10, pady=10)
-option3.grid(row=2, column=0, padx=10, pady=10)
-option4.grid(row=3, column=0, padx=10, pady=10)
-option5.grid(row=4, column=0, padx=10, pady=10)
+option1 = tk.Button(mainPage.content, text="Calculate Stock Data", width=40, command=lambda:switchFrames(mainPage,stockDataPage))
+option2 = tk.Button(mainPage.content, text="Calculate intrinsic value", width=40, command=lambda:switchFrames(mainPage,calValuePage))
+option3 = tk.Button(mainPage.content,text="Settings", width=40, command=lambda:switchFrames(mainPage,settingsPage))
+option4 = tk.Button(mainPage.content, text="About", width=40, command=lambda:switchFrames(mainPage,aboutPage))
+option5 = tk.Button(mainPage.content, text="Automate", width=40, command=lambda:switchFrames(mainPage,autoPage))
+option6 = tk.Button(mainPage.content, text="Update Excel", width=40, command=updateExcel)
+option7 = tk.Button(mainPage.content, text="Exit", width=40, command=root.quit)
+option1.grid(row=0,   column=0, pady=7)
+option2.grid(row=1,   column=0, pady=7)
+option3.grid(row=2,   column=0, pady=7)
+option4.grid(row=3,   column=0, pady=7)
+option5.grid(row=4,   column=0, pady=7)
+option6.grid(row=5,   column=0, pady=7)
+option7.grid(row=100, column=0, pady=7)
 mainPage.show()
 
 
@@ -627,7 +799,7 @@ mainPage.show()
 ###############        StockDataPage      #################
 ###########################################################
 
-dataButton = tk.Button(stockDataPage.content, text="Get Stock Data", command=lambda: getBig5Numbers(symbol.get()))
+dataButton = tk.Button(stockDataPage.content, text="Get Stock Data", command=lambda: getBig5Numbers(symbol.get(),stockDataPage))
 back = tk.Button(stockDataPage.content, text="Back",command=lambda:switchFrames(stockDataPage,mainPage))
 symbol = tk.Entry(stockDataPage.content, width=20, borderwidth=5)
 symbol.bind('<FocusIn>', onFocusEntry)
@@ -635,6 +807,15 @@ symbol.bind('<FocusOut>', lambda event, param="Enter Symbol": onFocusOut(event,p
 symbol.grid(row=0,column=0)
 dataButton.grid(row=0,column=1)
 back.grid(row=100,column=0,pady=10)
+
+###########################################################
+###############        autoPage           #################
+###########################################################
+
+startAutoMate = tk.Button(autoPage.content, text="start",command=autoStocksFromList)
+startAutoMate.grid(row=0,column=6)
+backButton = tk.Button(autoPage.content, text="back", command=cleanUpAutoPage)
+backButton.grid(row=100, column=6)
 
 ###########################################################
 ###############     calValuePage          #################
@@ -695,6 +876,13 @@ saveButton.grid(row=100, column=1)
 ###########################################################
 
 # TODO: Build the AboutPage
+
+
+###########################################################
+###############     AutoMate              #################
+###########################################################
+
+
 
 ##########################################################
 #####      main program:                 #################
