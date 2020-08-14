@@ -2,6 +2,7 @@
 #####      Imports                       #################
 ##########################################################
 import tkinter as tk
+from tkinter import ttk
 from yahoo_fin import stock_info as si
 import yfinance as yf
 from tkinter import filedialog
@@ -17,7 +18,6 @@ import time
 import os
 import shutil
 import datetime
-import getpass
 
 ##########################################################
 #####      Constants                     #################
@@ -130,6 +130,9 @@ def getDataLocation():
 def destroyTempLabel():
     for lab in globLabel:
         lab.destroy()
+
+def secToMonths(sec):
+    return sec/60/60/24/30
 
 def isDataLocValid():
     dataFile = open(DataFileName,'r')
@@ -281,7 +284,7 @@ def checkWhichNegative(sheet,row):
 def createList(sheet,row):
     numList = []
     empties = checkWhichEmpty(sheet,row)
-    negatives = checkWhichNegative(sheet,row)
+    #negatives = checkWhichNegative(sheet,row)
     if(len(empties)>3):
         return "Not enough Data!!"
     for cell in range(11):
@@ -326,6 +329,9 @@ def saveStock(filePath, symbol, num, color):
     mainWB = openpyxl.load_workbook(filePath)
     ws = mainWB.active
     saveRow = findrow(filePath,symbol.upper())+1
+    isCash = 1
+    if('FreeCashFlow' not in num.keys()):
+        isCash = 0
     redFill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
     greenFill = PatternFill(start_color="00FF00", end_color="00FF00", fill_type="solid")
     if color == "R":
@@ -337,6 +343,8 @@ def saveStock(filePath, symbol, num, color):
                 row=saveRow,value=si.get_live_price(symbol)).fill = redFill
         ws.cell(column=((len(num) - 1) * 3 + ((len(num["ROIC"]) - 1)) + 7),
                 row=saveRow, value=datetime.date.today()).fill = redFill
+        ws.cell(column=((len(num) - 1) * 3 + ((len(num["ROIC"]) - 1)) + 8),
+                row=saveRow, value=isCash).fill = redFill
     else:
         ws.cell(column=1, row=saveRow, value=yf.Ticker(symbol).info['longName']).fill = greenFill
         ws.cell(column=2, row=saveRow, value=symbol).fill = greenFill
@@ -346,6 +354,8 @@ def saveStock(filePath, symbol, num, color):
                 row=saveRow, value=si.get_live_price(symbol)).fill = greenFill
         ws.cell(column=((len(num) - 1) * 3 + ((len(num["ROIC"]) - 1)) + 7),
                 row=saveRow, value=datetime.date.today()).fill = greenFill
+        ws.cell(column=((len(num) - 1) * 3 + ((len(num["ROIC"]) - 1)) + 8),
+                row=saveRow, value=isCash).fill = greenFill
     for i in range(len(num)):
         for j in range(len(num["ROIC"])):
             ws.cell(column=i*3+j+3, row=saveRow, value=list(num[list(num.keys())[i]].values())[j])
@@ -370,25 +380,28 @@ def printUpdated():
 def printFailedToUpdate(symbol):
     tk.messagebox.showwarning(title="Failed to Update Stock", message=("Failed to update the Stock with symbol: " + symbol))
 
-def updateSymbol(symbol,sheet,startIndex):
-    result = downloadStockData(symbol)
-    if (result == -1):
-        printFailedToUpdate(symbol)
-        return -1
-    try:
-        changePlaceForTheFile(symbol)
-    except FileNotFoundError:
-        messagebox.showerror("ERROR", ("Failed To Download the file Of stock with symbol: " + symbol))
-        return -1
-    convert_CSV_To_XLSX(symbol)
+
+def updateSymbol(symbol,filePathOfExcel,isCash,isGreen):
     loc = getDataLocation()
     fileName = loc[settingBrowseNames[0]] + "/" + symbol + " Key Ratios.xlsx"
+    isDownload = os.path.isfile(fileName)==False or secToMonths(time.time()-os.stat(fileName).st_mtime)>3
+    if(isDownload):
+        result = downloadStockData(symbol)
+        if (result == -1):
+            printFailedToUpdate(symbol)
+            return -1
+        try:
+            changePlaceForTheFile(symbol)
+        except FileNotFoundError:
+            messagebox.showerror("ERROR", ("Failed To Download the file Of stock with symbol: " + symbol))
+            return -1
+        convert_CSV_To_XLSX(symbol)
     try:
-        wb = xlrd.open_workbook(fileName)
+        localwb = xlrd.open_workbook(fileName)
     except FileNotFoundError:
-        messagebox.showerror("ERROR", ("File with the stock data not found of symbol: " + symbol))
+        messagebox.showerror("ERROR","File of Symbol: " + str(symbol) + "Not Found")
         return -1
-    sheetData = wb.sheet_by_index(0)
+    sheetData = localwb.sheet_by_index(0)
     revenue = createList(sheetData, REVENUE)
     eps = createList(sheetData, EPS)
     equity = createList(sheetData, BOOKVALUE)
@@ -398,115 +411,73 @@ def updateSymbol(symbol,sheet,startIndex):
     if not isListsValid([revenue, eps, equity, freeCashFlow, operatingCashFlow, roic]):
         messagebox.showerror("ERROR", ("Not enough Data To Calculate for stock with symbol: " + symbol))
         return -1
+    global numbers
+    numbers = {}
     numbers["ROIC"] = calNumbers(roic, "AVERAGE")
     numbers["Equity"] = calNumbers(equity, "GROWTH")
     numbers["EPS"] = calNumbers(eps, "GROWTH")
     numbers["Revenue"] = calNumbers(revenue, "GROWTH")
+    if(isCash==1):
+        numbers["FreeCashFlow"] = calNumbers(freeCashFlow, "GROWTH")
+    else:
+        numbers["OperatingCashFlow"] = calNumbers(operatingCashFlow, "GROWTH")
+    if(isGreen==1):
+        saveStock(filePathOfExcel, symbol, numbers, "G")
+    else:
+        saveStock(filePathOfExcel, symbol, numbers, "R")
+    return 0
 
-    # TODO: Think what to do with operating cash flow or cash flow.
-    numbers["FreeCashFlow"] = calNumbers(freeCashFlow, "GROWTH")
-    numbers["OperatingCashFlow"] = calNumbers(operatingCashFlow, "GROWTH")
-    # TODO: Check if Green or Red.
-            saveStock(saveTo, stock, numbers, "GREEN")
-            saveStock(saveTo, stock, numbers, "RED")
-    return 1
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+def isCashIsGreen(ICIG,sheet,numRow):
+    green1 = "FF00FF00"
+    green2 = "0000FF00"
+    ICIG[0] = sheet.cell(numRow,22).value
+    if(sheet.cell(numRow,22).fill.start_color.rgb == green1 or sheet.cell(numRow,22).fill.start_color.rgb == green2):
+        ICIG[1] = 1
 
 def updateExcel():
+    newWindow = tk.Toplevel(root)
+    newWindow.title("Updating Excel")
+    newWindow.geometry("600x600")
+    my_progress = ttk.Progressbar(newWindow, orient=tk.HORIZONTAL, length=500, mode='determinate')
+    my_progress.pack(pady=20)
     dataFileLoc = getDataLocation()
     excelLoc = dataFileLoc[settingBrowseNames[1]] + "\\" + "inv.xlsx"
-    invWB = openpyxl.open()
-    wb = xlrd.open_workbook(excelLoc)
-    sheet = wb.sheet_by_index(0)
+    wb = openpyxl.load_workbook(excelLoc)
+    sheet = wb.active
     startIndex = -1
     try:
-        if not sheet.cell(startIndex,1)=='':
-            startIndex=firstRow
+        if not sheet.cell(firstRow+1,1).value==None:
+            startIndex=firstRow+1
     except:
         startIndex = -1
     if startIndex==-1:
         printUpdated()
         return
-    endIndex = firstRow
+    endIndex = firstRow+1
     try:
         for i in range(3000):
-            if sheet.cell(endIndex,1)=='':
+            if sheet.cell(endIndex,1).value==None:
                 endIndex += -1
                 break
             else:
                 endIndex += 1
     except:
         endIndex += -1
+    ICIG = [0,0]
+    retVal = 0
+    jumpsVal = 100 / (endIndex - startIndex + 1)
     while startIndex<=endIndex:
-        updateSymbol(symbol,sheet,startIndex)
-    printUpdated()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        stockSymbol = sheet.cell(startIndex,2).value
+        isCashIsGreen(ICIG, sheet,startIndex)
+        retVal += updateSymbol(stockSymbol,excelLoc,ICIG[0],ICIG[1])
+        ICIG[0] = 0
+        ICIG[1] = 0
+        startIndex += 1
+        my_progress['value'] += jumpsVal
+    if(retVal==0):
+        printUpdated()
+    else:
+        messagebox.showinfo("Done", "Finish Updating but with some issues")
 
 def calNumbers(data,avgOrGrowth):
     dic = {}
@@ -633,8 +604,10 @@ def getBig5Numbers(stock,pageToPrint):
     switchFrames(pageToPrint,pageToPrint)
     if(not isDataLocValid()):
         messagebox.showerror("Error","Please enter valid locations inside the setting page.")
-        return
-    isDownload = messagebox.askyesno("fromOnline", "Do you want to download new data?", )
+        return -1
+    loc = getDataLocation()
+    fileName = loc[settingBrowseNames[0]] + "/" + stock + " Key Ratios.xlsx"
+    isDownload = os.path.isfile(fileName)==False or secToMonths(time.time()-os.stat(fileName).st_mtime)>3
     if(isDownload==True):
         result = downloadStockData(stock)
         if(result==-1):
@@ -643,15 +616,13 @@ def getBig5Numbers(stock,pageToPrint):
             changePlaceForTheFile(stock)
         except FileNotFoundError:
             messagebox.showerror("ERROR", "Failed To Download the file please try again")
-            return
+            return -1
         convert_CSV_To_XLSX(stock)
-    loc = getDataLocation()
-    fileName = loc[settingBrowseNames[0]] + "/" + stock + " Key Ratios.xlsx"
     try:
         wb = xlrd.open_workbook(fileName)
     except FileNotFoundError:
         messagebox.showerror("ERROR","File with the stock data not found")
-        return
+        return -1
     sheet = wb.sheet_by_index(0)
     revenue = createList(sheet, REVENUE)
     eps = createList(sheet, EPS)
@@ -663,7 +634,7 @@ def getBig5Numbers(stock,pageToPrint):
         lable = tk.Label(pageToPrint.content,text="Not Enough Data to Calculate")
         lable.grid(row=1,column=0) #TODO: Need to change the location of the grid.
         globLabel.append(lable)
-        return 0
+        return 4
     numbers["ROIC"] = calNumbers(roic, "AVERAGE")
     numbers["Equity"] = calNumbers(equity, "GROWTH")
     numbers["EPS"] = calNumbers(eps, "GROWTH")
@@ -682,9 +653,9 @@ def getBig5Numbers(stock,pageToPrint):
         else:
             del numbers["FreeCashFlow"]
         if (res2 == True):
-            saveStock(saveTo, stock, numbers, "GREEN")
+            saveStock(saveTo, stock, numbers, "G")
         else:
-            saveStock(saveTo, stock, numbers, "RED")
+            saveStock(saveTo, stock, numbers, "R")
     return 1
 
 
@@ -718,13 +689,17 @@ def convert_CSV_To_XLSX(stock):
 def downloadStockData(stock):
     drive = wb.Chrome()
     stock = stock.upper()
+    drive.implicitly_wait(4)
     drive.get("https://financials.morningstar.com/ratios/r.html?t=" + stock)
     try:
         drive.find_element_by_css_selector('.large_button').click()
     except exceptions.NoSuchElementException:
         messagebox.showerror("ERROR!","No Such Stock Exists")
         return -1
-    time.sleep(3)
+    filename = stock + " Key Ratios.csv"
+    src = "C:/Users/BenGabay/Downloads/" + filename
+    while not os.path.isfile(src):
+        pass
     drive.quit()
     return 1
 
@@ -765,10 +740,37 @@ def calVal(epsGrowth,PE,currentEPS):
 
 def autoStocksFromList():
     stockListFile = open("stockList.txt","r")
+    listOfStock = []
     for line in stockListFile:
         if not line.startswith("#"):
-            getBig5Numbers(line.rstrip(),autoPage)
+            listOfStock.append(line.rstrip())
     stockListFile.close()
+    loc = getDataLocation()
+    for stock in listOfStock:
+        fileName = loc[settingBrowseNames[0]] + "/" + stock + " Key Ratios.xlsx"
+        isDownload = os.path.isfile(fileName) == False or secToMonths(time.time() - os.stat(fileName).st_mtime) > 3
+        if(isDownload):
+            result = downloadStockData(stock)
+            if (result == -1):
+                messagebox.showerror("ERROR", "Failed To Download the file please try again")
+                return None
+            try:
+                changePlaceForTheFile(stock)
+            except FileNotFoundError:
+                messagebox.showerror("ERROR", "Failed To Download the file please try again")
+                return None
+            convert_CSV_To_XLSX(stock)
+    toContinue = messagebox.askyesno("To Show Data","Finished Downloading, Do you want continue to read the Data?")
+    notEnoughtDataList = []
+    if(toContinue):
+        for stock in listOfStock:
+            ans = getBig5Numbers(stock, autoPage)
+            if(ans==-1):
+                return None
+            elif(ans==4):
+                messagebox.showinfo("Update","Not enough Data To Calculate for stock with symbol: "+ stock)
+                notEnoughtDataList.append(stock)
+    return notEnoughtDataList
 
 def cleanUpAutoPage():
     switchFrames(autoPage,mainPage)
@@ -812,10 +814,10 @@ back.grid(row=100,column=0,pady=10)
 ###############        autoPage           #################
 ###########################################################
 
-startAutoMate = tk.Button(autoPage.content, text="start",command=autoStocksFromList)
-startAutoMate.grid(row=0,column=6)
+startAutoMate = tk.Button(autoPage.content, text="start", command=autoStocksFromList)
+startAutoMate.grid(row=0,column=6, pady=7)
 backButton = tk.Button(autoPage.content, text="back", command=cleanUpAutoPage)
-backButton.grid(row=100, column=6)
+backButton.grid(row=100, column=6, pady=7)
 
 ###########################################################
 ###############     calValuePage          #################
