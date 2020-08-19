@@ -30,6 +30,7 @@ FREECASHFLOW = 15
 OPERATINGCASH = 13
 ROIC = 38
 numbers = {}
+isSaveNeeded=True
 stockListFile = None
 DataFileName = ".data"
 numberOfSettingBrowse = 2
@@ -37,6 +38,8 @@ settingBrowseNames = ["filesLocation","favStocksLocation"]
 CurrentAAABondYield = 2.41
 globLabel = []
 firstRow = 16
+maxFiles = 250
+minFiles = 200
 
 
 
@@ -120,6 +123,7 @@ def getDataLocation():
     i = 0
     dataFile = open(DataFileName,'r')
     for line in dataFile:
+        line = line.replace("/","\\")
         ans[settingBrowseNames[i]] = line.rstrip()
         i += 1
         if i>= numberOfSettingBrowse:
@@ -134,9 +138,25 @@ def destroyTempLabel():
 def secToMonths(sec):
     return sec/60/60/24/30
 
+def delMechanism():
+    loc = getDataLocation()
+    copiesLoc = loc[settingBrowseNames[1]] + "\\excel_copies"
+    files = ([name for name in os.listdir(copiesLoc) if os.path.isfile(os.path.join(copiesLoc, name))])
+    files.sort()
+    if len(files) >= maxFiles:
+        while len(files) > minFiles: # maxFiles should be around 250. minFile should be around 200
+            f = files[0]
+            fToDel = os.path.join(copiesLoc,f)
+            files.remove(files[0])
+            try:
+                os.remove(fToDel)
+            except:
+                messagebox.showerror("ERROR!","File doesn't exist!!")
+
 def isDataLocValid():
     dataFile = open(DataFileName,'r')
     for line in dataFile:
+        line = line.replace("/","\\")
         if(os.path.isdir(line.rstrip())):
             continue
         return False
@@ -233,8 +253,8 @@ def checkCalculatorInput(inputs):
         try:
             float(inp)
         except:
-            return False;
-    return True;
+            return False
+    return True
 
 def onFocusEntry(event):
     """a function that gets called whenever entry is clicked"""
@@ -300,6 +320,8 @@ def calGrowth(start,end,years,rnd):
         ans = round((pow(end/start,1/years)-1),rnd)
     except TypeError:
         return -9.99
+    except ZeroDivisionError:
+        return 9.99
     return ans
 
 def findrow(filePath,stock):
@@ -308,10 +330,12 @@ def findrow(filePath,stock):
     i = 0
     try:
         for i in range(300):
-            if not sheet.cell(i+firstRow,1) or sheet.cell_value(i+firstRow,1) == stock:
-                return i+firstRow
+            if not sheet.cell(i+firstRow,1):
+                return i+firstRow,False
+            elif sheet.cell_value(i+firstRow,1) == stock:
+                return i+firstRow,True
     except:
-        return i+firstRow
+        return i+firstRow,False
 
 def calAverage(numbers,rnd):
     sum = 0
@@ -326,19 +350,25 @@ def calAverage(numbers,rnd):
     return round((sum/(len(numbers)-numOfEmpty))/100,rnd)
 
 def saveStock(filePath, symbol, num, color):
+    copyInvFile()
     mainWB = openpyxl.load_workbook(filePath)
     ws = mainWB.active
-    saveRow = findrow(filePath,symbol.upper())+1
+    saveRow,isIntValueExist = findrow(filePath,symbol.upper())
+    saveRow += 1
     isCash = 1
     if('FreeCashFlow' not in num.keys()):
         isCash = 0
     redFill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
     greenFill = PatternFill(start_color="00FF00", end_color="00FF00", fill_type="solid")
     if color == "R":
-        ws.cell(column=1, row=saveRow, value=yf.Ticker(symbol).info['longName']).fill = redFill
-        ws.cell(column=2,row=saveRow,value=symbol).fill = redFill
-        ws.cell(column=18, row=saveRow, value="").fill = redFill
-        ws.cell(column=19, row=saveRow, value="").fill = redFill
+        if not isIntValueExist:
+            try:
+                ws.cell(column=1, row=saveRow, value=yf.Ticker(symbol).info['longName']).fill = redFill
+            except:
+                pass
+            ws.cell(column=18, row=saveRow, value="").fill = redFill
+            ws.cell(column=19, row=saveRow, value="").fill = redFill
+            ws.cell(column=2, row=saveRow, value=symbol).fill = redFill
         ws.cell(column=((len(num) - 1) * 3 + ((len(num["ROIC"]) - 1)) + 6),
                 row=saveRow,value=si.get_live_price(symbol)).fill = redFill
         ws.cell(column=((len(num) - 1) * 3 + ((len(num["ROIC"]) - 1)) + 7),
@@ -346,10 +376,14 @@ def saveStock(filePath, symbol, num, color):
         ws.cell(column=((len(num) - 1) * 3 + ((len(num["ROIC"]) - 1)) + 8),
                 row=saveRow, value=isCash).fill = redFill
     else:
-        ws.cell(column=1, row=saveRow, value=yf.Ticker(symbol).info['longName']).fill = greenFill
-        ws.cell(column=2, row=saveRow, value=symbol).fill = greenFill
-        ws.cell(column=18, row=saveRow, value="").fill = greenFill
-        ws.cell(column=19, row=saveRow, value="").fill = greenFill
+        if not isIntValueExist:
+            try:
+                ws.cell(column=1, row=saveRow, value=yf.Ticker(symbol).info['longName']).fill = greenFill
+            except:
+                pass
+            ws.cell(column=2, row=saveRow, value=symbol).fill = greenFill
+            ws.cell(column=18, row=saveRow, value="").fill = greenFill
+            ws.cell(column=19, row=saveRow, value="").fill = greenFill
         ws.cell(column=((len(num) - 1) * 3 + ((len(num["ROIC"]) - 1)) + 6),
                 row=saveRow, value=si.get_live_price(symbol)).fill = greenFill
         ws.cell(column=((len(num) - 1) * 3 + ((len(num["ROIC"]) - 1)) + 7),
@@ -383,7 +417,7 @@ def printFailedToUpdate(symbol):
 
 def updateSymbol(symbol,filePathOfExcel,isCash,isGreen):
     loc = getDataLocation()
-    fileName = loc[settingBrowseNames[0]] + "/" + symbol + " Key Ratios.xlsx"
+    fileName = loc[settingBrowseNames[0]] + "\\" + symbol + " Key Ratios.xlsx"
     isDownload = os.path.isfile(fileName)==False or secToMonths(time.time()-os.stat(fileName).st_mtime)>3
     if(isDownload):
         result = downloadStockData(symbol)
@@ -435,13 +469,16 @@ def isCashIsGreen(ICIG,sheet,numRow):
         ICIG[1] = 1
 
 def updateExcel():
+    global isSaveNeeded
     newWindow = tk.Toplevel(root)
     newWindow.title("Updating Excel")
-    newWindow.geometry("600x600")
+    newWindow.geometry("600x100")
     my_progress = ttk.Progressbar(newWindow, orient=tk.HORIZONTAL, length=500, mode='determinate')
     my_progress.pack(pady=20)
     dataFileLoc = getDataLocation()
     excelLoc = dataFileLoc[settingBrowseNames[1]] + "\\" + "inv.xlsx"
+    copyInvFile()
+    isSaveNeeded=False
     wb = openpyxl.load_workbook(excelLoc)
     sheet = wb.active
     startIndex = -1
@@ -452,6 +489,7 @@ def updateExcel():
         startIndex = -1
     if startIndex==-1:
         printUpdated()
+        isSaveNeeded = True
         return
     endIndex = firstRow+1
     try:
@@ -474,10 +512,22 @@ def updateExcel():
         ICIG[1] = 0
         startIndex += 1
         my_progress['value'] += jumpsVal
+        my_progress.update()
+    isSaveNeeded=True
+    newWindow.destroy()
     if(retVal==0):
         printUpdated()
     else:
         messagebox.showinfo("Done", "Finish Updating but with some issues")
+
+def copyInvFile():
+    if isSaveNeeded:
+        delMechanism()
+        fileLoc = getDataLocation()
+        src = fileLoc[settingBrowseNames[1]] + "\\" + "inv.xlsx"
+        timeStamp = datetime.datetime.now().strftime("%d_%m_%Y_%H_%M_%S")
+        dest = fileLoc[settingBrowseNames[1]] + "\\excel_copies\\" + "inv_copy_" + timeStamp +".xlsx"
+        shutil.copyfile(src,dest)
 
 def calNumbers(data,avgOrGrowth):
     dic = {}
@@ -606,7 +656,7 @@ def getBig5Numbers(stock,pageToPrint):
         messagebox.showerror("Error","Please enter valid locations inside the setting page.")
         return -1
     loc = getDataLocation()
-    fileName = loc[settingBrowseNames[0]] + "/" + stock + " Key Ratios.xlsx"
+    fileName = loc[settingBrowseNames[0]] + "\\" + stock + " Key Ratios.xlsx"
     isDownload = os.path.isfile(fileName)==False or secToMonths(time.time()-os.stat(fileName).st_mtime)>3
     if(isDownload==True):
         result = downloadStockData(stock)
@@ -632,7 +682,7 @@ def getBig5Numbers(stock,pageToPrint):
     roic = createList(sheet, ROIC)
     if not isListsValid([revenue, eps, equity, freeCashFlow, operatingCashFlow, roic]):
         lable = tk.Label(pageToPrint.content,text="Not Enough Data to Calculate")
-        lable.grid(row=1,column=0) #TODO: Need to change the location of the grid.
+        lable.grid(row=1,column=0)
         globLabel.append(lable)
         return 4
     numbers["ROIC"] = calNumbers(roic, "AVERAGE")
@@ -661,10 +711,11 @@ def getBig5Numbers(stock,pageToPrint):
 
 
 def convert_CSV_To_XLSX(stock):
+    loc = getDataLocation()
     oldname = stock + " Key Ratios.csv"
-    oldPath = "D:/StockXLSXFolder/" + oldname
+    oldPath = loc[settingBrowseNames[0]] + "\\" + oldname
     newname = stock + " Key Ratios.xlsx"
-    newPath = "D:/StockXLSXFolder/" + newname
+    newPath = loc[settingBrowseNames[0]] + "\\" + newname
     if (os.path.isfile(newPath)==True):
         os.remove(newPath)
     wbook = Workbook(newPath)
@@ -697,16 +748,17 @@ def downloadStockData(stock):
         messagebox.showerror("ERROR!","No Such Stock Exists")
         return -1
     filename = stock + " Key Ratios.csv"
-    src = "C:/Users/BenGabay/Downloads/" + filename
+    src = "C:\\Users\\BenGabay\\Downloads\\" + filename
     while not os.path.isfile(src):
         pass
     drive.quit()
     return 1
 
 def changePlaceForTheFile(stock):
+    loc=getDataLocation()
     filename = stock + " Key Ratios.csv"
-    src = "C:/Users/BenGabay/Downloads/" + filename
-    dest = "D:/StockXLSXFolder/" + filename
+    src = "C:\\Users\\BenGabay\\Downloads\\" + filename
+    dest = loc[settingBrowseNames[0]] + "\\" +  filename
     shutil.move(src,dest)
 
 
@@ -747,7 +799,7 @@ def autoStocksFromList():
     stockListFile.close()
     loc = getDataLocation()
     for stock in listOfStock:
-        fileName = loc[settingBrowseNames[0]] + "/" + stock + " Key Ratios.xlsx"
+        fileName = loc[settingBrowseNames[0]] + "\\" + stock + " Key Ratios.xlsx"
         isDownload = os.path.isfile(fileName) == False or secToMonths(time.time() - os.stat(fileName).st_mtime) > 3
         if(isDownload):
             result = downloadStockData(stock)
@@ -801,7 +853,7 @@ mainPage.show()
 ###############        StockDataPage      #################
 ###########################################################
 
-dataButton = tk.Button(stockDataPage.content, text="Get Stock Data", command=lambda: getBig5Numbers(symbol.get(),stockDataPage))
+dataButton = tk.Button(stockDataPage.content, text="Get Stock Data", command=lambda: getBig5Numbers(str(symbol.get()).upper(),stockDataPage))
 back = tk.Button(stockDataPage.content, text="Back",command=lambda:switchFrames(stockDataPage,mainPage))
 symbol = tk.Entry(stockDataPage.content, width=20, borderwidth=5)
 symbol.bind('<FocusIn>', onFocusEntry)
