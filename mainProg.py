@@ -156,10 +156,14 @@ def delMechanism():
 
 def isDataLocValid():
     dataFile = open(DataFileName,'r')
+    numOfLines = 0
     for line in dataFile:
         line = line.replace("/","\\")
+        numOfLines += 1
         if(os.path.isdir(line.rstrip())):
             continue
+        return False
+    if numOfLines < 2:
         return False
     return True
 
@@ -522,9 +526,11 @@ def updateExcel():
         messagebox.showinfo("Done", "Finish Updating but with some issues")
 
 def copyInvFile():
-    if isSaveNeeded:
+    fileLoc = getDataLocation()
+    if not os.path.isdir(os.path.join(fileLoc[settingBrowseNames[1]],"excel_copies")):
+        os.mkdir(os.path.join(fileLoc[settingBrowseNames[1]],"excel_copies"))
+    if isSaveNeeded and os.path.isfile(os.path.join(fileLoc[settingBrowseNames[1]],"inv.xlsx")):
         delMechanism()
-        fileLoc = getDataLocation()
         src = fileLoc[settingBrowseNames[1]] + "\\" + "inv.xlsx"
         timeStamp = datetime.datetime.now().strftime("%d_%m_%Y_%H_%M_%S")
         dest = fileLoc[settingBrowseNames[1]] + "\\excel_copies\\" + "inv_copy_" + timeStamp +".xlsx"
