@@ -18,6 +18,7 @@ import time
 import os
 import shutil
 import datetime
+import getpass
 
 ##########################################################
 #####      Constants                     #################
@@ -748,7 +749,8 @@ def downloadStockData(stock):
         messagebox.showerror("ERROR!","No Such Stock Exists")
         return -1
     filename = stock + " Key Ratios.csv"
-    src = "C:\\Users\\BenGabay\\Downloads\\" + filename
+    userName = getpass.getuser()
+    src = "C:\\Users\\" + userName + "\\Downloads\\" + filename
     while not os.path.isfile(src):
         pass
     drive.quit()
@@ -757,7 +759,8 @@ def downloadStockData(stock):
 def changePlaceForTheFile(stock):
     loc=getDataLocation()
     filename = stock + " Key Ratios.csv"
-    src = "C:\\Users\\BenGabay\\Downloads\\" + filename
+    userName = getpass.getuser()
+    src = "C:\\Users\\" + userName + "\\Downloads\\" + filename
     dest = loc[settingBrowseNames[0]] + "\\" +  filename
     shutil.move(src,dest)
 
