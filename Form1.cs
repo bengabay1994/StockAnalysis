@@ -15,6 +15,7 @@ namespace StockAnalysis
     using Exceptions;
     using Common;
     using Extensions;
+
     public partial class Form1 : Form
     {
         private const int c_amountOfPages = 6;
@@ -24,9 +25,50 @@ namespace StockAnalysis
             InitializeComponent();
         }
 
+        private void b_CalculateStockData_p1_Click(object sender, EventArgs e)
+        {
+            ChangePage(StocksEnums.Pages.CalculateStockData);
+        }
+
+        private void b_CalculateIntrinsicValue_p2_Click(object sender, EventArgs e)
+        {
+            ChangePage(StocksEnums.Pages.CalculateIntrinsicValue);
+        }
+
         private async void b_Automate_p3_Click(object sender, EventArgs e)
         {
-            
+            ChangePage(StocksEnums.Pages.Automate);
+        }
+
+        private void b_UpdateExcel_p4_Click(object sender, EventArgs e)
+        {
+            ChangePage(StocksEnums.Pages.UpdateExcel);
+        }
+
+        private void b_Settings_p5_Click(object sender, EventArgs e)
+        {
+            ChangePage(StocksEnums.Pages.Settings);
+        }
+
+        private void b_About_p6_Click(object sender, EventArgs e)
+        {
+            ChangePage(StocksEnums.Pages.About);
+        }
+
+        private void b_Exit_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                this.Close();
+            }
+            catch (ObjectDisposedException exc)
+            {
+                // show Error message box
+            }
+            catch (InvalidOperationException exc)
+            {
+                // show Error message box
+            }
         }
 
         /***************************************************
@@ -45,19 +87,25 @@ namespace StockAnalysis
             ChangeControlsTo(new int[] { pageNumber }, true);
         }
 
-        private async Task ChangePage(int newPage)
+        private void ChangePage(StocksEnums.Pages newPage)
         {
-            if (newPage <= 0 || newPage > c_amountOfPages)
+            int page = (int)newPage;
+
+            if (page <= 0 || page > c_amountOfPages)
             {
-                throw new PageNumberOutOfBoundException(newPage);
+                throw new PageNumberOutOfBoundException(page);
             }
 
-            IEnumerable<int> pagesToHide = Enumerable.Range(1, c_amountOfPages).Where(p => p != newPage);
+            IEnumerable<int> pagesToHide = Enumerable.Range(1, c_amountOfPages).Where(p => p != page);
 
-            await Task.Run(() => HidePages(pagesToHide)).ConfigureAwait(false);
+            HidePages(pagesToHide);
 
-            await Task.Run(() => ShowPage(newPage)).ConfigureAwait(false);
+            ShowPage(page);
         }
+
+        /**************************************************************************************
+         ****  EveryThing Below This Fucntion should be above Gui Helper Function     *********
+         **************************************************************************************/
 
         private void ChangeControlsTo(IEnumerable<int> pages, bool visible)
         {
@@ -72,5 +120,6 @@ namespace StockAnalysis
                 control.Visible = visible;
             }
         }
+
     }
 }

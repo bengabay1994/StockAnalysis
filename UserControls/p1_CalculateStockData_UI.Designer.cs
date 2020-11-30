@@ -99,7 +99,7 @@
             this.tableLayoutPanel1.Controls.Add(this.tl_Data_Year5, 5, 1);
             this.tableLayoutPanel1.Controls.Add(this.tl_Data_TTM, 11, 1);
             this.tableLayoutPanel1.Controls.Add(this.tl_Data_Year10, 10, 1);
-            this.tableLayoutPanel1.Location = new System.Drawing.Point(9, 66);
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(9, 9);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 14;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 7.142858F));
@@ -362,7 +362,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.tableLayoutPanel1);
             this.Name = "p1_CalculateStockData_UI";
-            this.Size = new System.Drawing.Size(881, 616);
+            this.Size = new System.Drawing.Size(884, 548);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
             this.ResumeLayout(false);
