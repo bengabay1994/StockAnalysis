@@ -291,6 +291,7 @@
             this.b_GetOnlineData.TabIndex = 1;
             this.b_GetOnlineData.Text = "Download Stock Data";
             this.b_GetOnlineData.UseVisualStyleBackColor = true;
+            this.b_GetOnlineData.Click += new System.EventHandler(this.b_GetOnlineData_Click);
             // 
             // tl_Data_Year1
             // 
@@ -401,7 +402,7 @@
             this.tableLayoutPanel1.SetColumnSpan(this.cb_UseSettingsFavLocal, 2);
             this.cb_UseSettingsFavLocal.Location = new System.Drawing.Point(723, 484);
             this.cb_UseSettingsFavLocal.Name = "cb_UseSettingsFavLocal";
-            this.cb_UseSettingsFavLocal.Size = new System.Drawing.Size(63, 19);
+            this.cb_UseSettingsFavLocal.Size = new System.Drawing.Size(90, 19);
             this.cb_UseSettingsFavLocal.TabIndex = 4;
             this.cb_UseSettingsFavLocal.Text = "Use Settings";
             this.cb_UseSettingsFavLocal.UseVisualStyleBackColor = true;

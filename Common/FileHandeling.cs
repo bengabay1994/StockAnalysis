@@ -98,7 +98,7 @@ namespace StockAnalysis.Common
             return lines = lines.Select(line => Regex.Replace(line, @"""([-0-9]*),([0-9]*)""", @"$1$2")).ToList();
         }
 
-        public static void DownloadKeyRatioFileAsync(string stockSymbol)
+        public static void DownloadKeyRatioFile(string stockSymbol)
         {
             WebBrowser browser = new WebBrowser();
             browser.DocumentCompleted += new WebBrowserDocumentCompletedEventHandler(Browser_DocumentCompleted);
@@ -109,9 +109,15 @@ namespace StockAnalysis.Common
         private static void Browser_DocumentCompleted(object sender, WebBrowserDocumentCompletedEventArgs e)
         {
             WebBrowser browser = (WebBrowser)sender;
+
             if (browser.Url == e.Url)
             {
                 var doc = browser.Document;
+                if (doc.Title.Contains("Page Not Found", StringComparison.OrdinalIgnoreCase))
+                {
+                    MessageBox.Show("Stock Symbol doesn't exist, please check your symbol");
+                    return;
+                }
                 var col = doc.GetElementById("financeWrap");
                 HtmlElement downloadButton = doc.CreateElement("a");
                 downloadButton.SetAttribute("className", "large_button");
@@ -121,7 +127,7 @@ namespace StockAnalysis.Common
             }
             else 
             {
-                throw new BrowserDidntNavigateException(browser.Url.AbsoluteUri, e.Url.AbsoluteUri);
+                MessageBox.Show("Failed to Get the data for the specific stock, due to a connection error.");
             }
         }
 
