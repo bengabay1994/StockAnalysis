@@ -2,22 +2,101 @@
 namespace StockAnalysis.Common
 {
     using System;
+    using System.IO;
     using System.Linq;
     using System.Threading;
     using System.Collections.Generic;
-    using System.ComponentModel;
     using System.Data;
     using System.Drawing;
-    using System.Text;
+    using System.Text.RegularExpressions;
     using System.Threading.Tasks;
     using System.Windows.Forms;
+
+    using OfficeOpenXml;
 
     using Extensions;
     using Exceptions;
 
     public static class FileHandeling
     {
-        private static int counter = 0;
+        private static string s_ExcelSuffix = ".xlsx";
+
+        private static string s_CsvSuffix = ".csv";
+
+        public static async Task ConvertCsvToXlsxAsync(string pathToFile, string fileName)
+        {
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+            string excelFileName = fileName.Replace(s_CsvSuffix, s_ExcelSuffix);
+
+            if(File.Exists(String.Join("\\",pathToFile, excelFileName)))
+            {
+                File.Delete(String.Join("\\", pathToFile, excelFileName));
+            }
+
+            IList<string> lineToWrite = await ReadCsvFileAsync(pathToFile, fileName).ConfigureAwait(false);
+
+            await WriteToExcelAsync(lineToWrite, pathToFile, excelFileName).ConfigureAwait(false);
+
+        }
+
+        private static async Task WriteToExcelAsync(IList<string> linesToWrite, string pathToFile, string fileName)
+        {
+            var excelFileInfo = new FileInfo(string.Join("\\",pathToFile, fileName));
+
+            using (ExcelPackage excelPackage = new ExcelPackage(excelFileInfo))
+            {
+                int row = 1, colum = 1;
+                ExcelWorksheet workSheet;
+                if (excelPackage.Workbook.Worksheets.Count == 0)
+                {
+                    workSheet = excelPackage.Workbook.Worksheets.Add("Sheet1");
+                }
+                else
+                {
+                    workSheet = excelPackage.Workbook.Worksheets[0];
+                }
+                foreach (string line in linesToWrite)
+                {
+                    IList<string> words = line.Split(",");
+                    foreach (var word in words)
+                    {
+                        float num;
+                        bool isConverted = float.TryParse(word, out num);
+                        if (isConverted)
+                        {
+                            workSheet.Cells[row, colum].Value = num;
+                        }
+                        else
+                        {
+                            workSheet.Cells[row, colum].Value = word;
+                        }
+                        colum++;
+                    }
+                    colum = 1;
+                    row++;
+                }
+
+                await excelPackage.SaveAsAsync(excelFileInfo).ConfigureAwait(false);
+            }
+        }
+
+        // may throw file Could not be Found.
+        private static async Task<IList<string>> ReadCsvFileAsync(string pathToFile, string fileName)
+        {
+            string fileText;
+
+            using (StreamReader streamReader = new StreamReader(String.Join("\\",pathToFile, fileName)))
+            {
+                fileText = await streamReader.ReadToEndAsync().ConfigureAwait(false);
+            }
+
+            IList<string> lines = fileText.Split("\n");
+
+            lines = lines.Select(line => Regex.Replace(line, @"\r|\n", "")).ToList();
+
+            return lines = lines.Select(line => Regex.Replace(line, @"""([-0-9]*),([0-9]*)""", @"$1$2")).ToList();
+        }
 
         public static void DownloadKeyRatioFileAsync(string stockSymbol)
         {
@@ -45,7 +124,6 @@ namespace StockAnalysis.Common
                 throw new BrowserDidntNavigateException(browser.Url.AbsoluteUri, e.Url.AbsoluteUri);
             }
         }
-
 
         private static string CreateDownloadCSVLink(string stockSymbol)
         {

@@ -46,7 +46,7 @@
             this.tl_Data_Year7 = new System.Windows.Forms.Label();
             this.tl_Data_Year3 = new System.Windows.Forms.Label();
             this.tb_Symbol = new System.Windows.Forms.TextBox();
-            this.b_GetStockData = new System.Windows.Forms.Button();
+            this.b_GetOnlineData = new System.Windows.Forms.Button();
             this.tl_Data_Year1 = new System.Windows.Forms.Label();
             this.tl_Data_Year2 = new System.Windows.Forms.Label();
             this.tl_Data_Year4 = new System.Windows.Forms.Label();
@@ -55,6 +55,10 @@
             this.tl_Data_Year5 = new System.Windows.Forms.Label();
             this.tl_Data_TTM = new System.Windows.Forms.Label();
             this.tl_Data_Year10 = new System.Windows.Forms.Label();
+            this.b_GetLocalData = new System.Windows.Forms.Button();
+            this.cb_UseSettingStockData = new System.Windows.Forms.CheckBox();
+            this.b_SaveToExcel = new System.Windows.Forms.Button();
+            this.cb_UseSettingsFavLocal = new System.Windows.Forms.CheckBox();
             this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -90,7 +94,7 @@
             this.tableLayoutPanel1.Controls.Add(this.tl_Data_Year7, 6, 1);
             this.tableLayoutPanel1.Controls.Add(this.tl_Data_Year3, 2, 1);
             this.tableLayoutPanel1.Controls.Add(this.tb_Symbol, 0, 0);
-            this.tableLayoutPanel1.Controls.Add(this.b_GetStockData, 1, 0);
+            this.tableLayoutPanel1.Controls.Add(this.b_GetOnlineData, 1, 0);
             this.tableLayoutPanel1.Controls.Add(this.tl_Data_Year1, 1, 1);
             this.tableLayoutPanel1.Controls.Add(this.tl_Data_Year2, 2, 1);
             this.tableLayoutPanel1.Controls.Add(this.tl_Data_Year4, 4, 1);
@@ -99,6 +103,10 @@
             this.tableLayoutPanel1.Controls.Add(this.tl_Data_Year5, 5, 1);
             this.tableLayoutPanel1.Controls.Add(this.tl_Data_TTM, 11, 1);
             this.tableLayoutPanel1.Controls.Add(this.tl_Data_Year10, 10, 1);
+            this.tableLayoutPanel1.Controls.Add(this.b_GetLocalData, 3, 0);
+            this.tableLayoutPanel1.Controls.Add(this.cb_UseSettingStockData, 5, 0);
+            this.tableLayoutPanel1.Controls.Add(this.b_SaveToExcel, 10, 12);
+            this.tableLayoutPanel1.Controls.Add(this.cb_UseSettingsFavLocal, 10, 13);
             this.tableLayoutPanel1.Location = new System.Drawing.Point(9, 9);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 14;
@@ -251,7 +259,7 @@
             // tl_Data_Year7
             // 
             this.tl_Data_Year7.AutoSize = true;
-            this.tl_Data_Year7.Location = new System.Drawing.Point(516, 37);
+            this.tl_Data_Year7.Location = new System.Drawing.Point(447, 37);
             this.tl_Data_Year7.Name = "tl_Data_Year7";
             this.tl_Data_Year7.Size = new System.Drawing.Size(35, 15);
             this.tl_Data_Year7.TabIndex = 2;
@@ -260,7 +268,7 @@
             // tl_Data_Year3
             // 
             this.tl_Data_Year3.AutoSize = true;
-            this.tl_Data_Year3.Location = new System.Drawing.Point(240, 37);
+            this.tl_Data_Year3.Location = new System.Drawing.Point(171, 37);
             this.tl_Data_Year3.Name = "tl_Data_Year3";
             this.tl_Data_Year3.Size = new System.Drawing.Size(35, 15);
             this.tl_Data_Year3.TabIndex = 2;
@@ -274,15 +282,15 @@
             this.tb_Symbol.Size = new System.Drawing.Size(93, 23);
             this.tb_Symbol.TabIndex = 0;
             // 
-            // b_GetStockData
+            // b_GetOnlineData
             // 
-            this.tableLayoutPanel1.SetColumnSpan(this.b_GetStockData, 2);
-            this.b_GetStockData.Location = new System.Drawing.Point(102, 3);
-            this.b_GetStockData.Name = "b_GetStockData";
-            this.b_GetStockData.Size = new System.Drawing.Size(132, 23);
-            this.b_GetStockData.TabIndex = 1;
-            this.b_GetStockData.Text = "Get Stock Data";
-            this.b_GetStockData.UseVisualStyleBackColor = true;
+            this.tableLayoutPanel1.SetColumnSpan(this.b_GetOnlineData, 2);
+            this.b_GetOnlineData.Location = new System.Drawing.Point(102, 3);
+            this.b_GetOnlineData.Name = "b_GetOnlineData";
+            this.b_GetOnlineData.Size = new System.Drawing.Size(132, 23);
+            this.b_GetOnlineData.TabIndex = 1;
+            this.b_GetOnlineData.Text = "Download Stock Data";
+            this.b_GetOnlineData.UseVisualStyleBackColor = true;
             // 
             // tl_Data_Year1
             // 
@@ -296,7 +304,7 @@
             // tl_Data_Year2
             // 
             this.tl_Data_Year2.AutoSize = true;
-            this.tl_Data_Year2.Location = new System.Drawing.Point(171, 37);
+            this.tl_Data_Year2.Location = new System.Drawing.Point(240, 37);
             this.tl_Data_Year2.Name = "tl_Data_Year2";
             this.tl_Data_Year2.Size = new System.Drawing.Size(35, 15);
             this.tl_Data_Year2.TabIndex = 2;
@@ -314,7 +322,7 @@
             // tl_Data_Year6
             // 
             this.tl_Data_Year6.AutoSize = true;
-            this.tl_Data_Year6.Location = new System.Drawing.Point(447, 37);
+            this.tl_Data_Year6.Location = new System.Drawing.Point(516, 37);
             this.tl_Data_Year6.Name = "tl_Data_Year6";
             this.tl_Data_Year6.Size = new System.Drawing.Size(35, 15);
             this.tl_Data_Year6.TabIndex = 2;
@@ -356,6 +364,48 @@
             this.tl_Data_Year10.TabIndex = 2;
             this.tl_Data_Year10.Text = "Year10";
             // 
+            // b_GetLocalData
+            // 
+            this.tableLayoutPanel1.SetColumnSpan(this.b_GetLocalData, 2);
+            this.b_GetLocalData.Location = new System.Drawing.Point(240, 3);
+            this.b_GetLocalData.Name = "b_GetLocalData";
+            this.b_GetLocalData.Size = new System.Drawing.Size(132, 23);
+            this.b_GetLocalData.TabIndex = 1;
+            this.b_GetLocalData.Text = "Get Stock Data";
+            this.b_GetLocalData.UseVisualStyleBackColor = true;
+            // 
+            // cb_UseSettingStockData
+            // 
+            this.cb_UseSettingStockData.AutoSize = true;
+            this.tableLayoutPanel1.SetColumnSpan(this.cb_UseSettingStockData, 2);
+            this.cb_UseSettingStockData.Location = new System.Drawing.Point(378, 3);
+            this.cb_UseSettingStockData.Name = "cb_UseSettingStockData";
+            this.cb_UseSettingStockData.Size = new System.Drawing.Size(90, 19);
+            this.cb_UseSettingStockData.TabIndex = 4;
+            this.cb_UseSettingStockData.Text = "Use Settings";
+            this.cb_UseSettingStockData.UseVisualStyleBackColor = true;
+            // 
+            // b_SaveToExcel
+            // 
+            this.tableLayoutPanel1.SetColumnSpan(this.b_SaveToExcel, 2);
+            this.b_SaveToExcel.Location = new System.Drawing.Point(723, 447);
+            this.b_SaveToExcel.Name = "b_SaveToExcel";
+            this.b_SaveToExcel.Size = new System.Drawing.Size(99, 23);
+            this.b_SaveToExcel.TabIndex = 5;
+            this.b_SaveToExcel.Text = "Save Stock";
+            this.b_SaveToExcel.UseVisualStyleBackColor = true;
+            // 
+            // cb_UseSettingsFavLocal
+            // 
+            this.cb_UseSettingsFavLocal.AutoSize = true;
+            this.tableLayoutPanel1.SetColumnSpan(this.cb_UseSettingsFavLocal, 2);
+            this.cb_UseSettingsFavLocal.Location = new System.Drawing.Point(723, 484);
+            this.cb_UseSettingsFavLocal.Name = "cb_UseSettingsFavLocal";
+            this.cb_UseSettingsFavLocal.Size = new System.Drawing.Size(63, 19);
+            this.cb_UseSettingsFavLocal.TabIndex = 4;
+            this.cb_UseSettingsFavLocal.Text = "Use Settings";
+            this.cb_UseSettingsFavLocal.UseVisualStyleBackColor = true;
+            // 
             // p1_CalculateStockData_UI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -373,7 +423,7 @@
 
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.TextBox tb_Symbol;
-        private System.Windows.Forms.Button b_GetStockData;
+        private System.Windows.Forms.Button b_GetOnlineData;
         private System.Windows.Forms.Label tl_Data_TTM;
         private System.Windows.Forms.Label tl_Data_Year9;
         private System.Windows.Forms.Label tl_Data_Year7;
@@ -398,5 +448,9 @@
         private System.Windows.Forms.Label lt_Data_Equity;
         private System.Windows.Forms.Label lt_Data_Eps;
         private System.Windows.Forms.Label lt_Data_Revenue;
+        private System.Windows.Forms.Button b_GetLocalData;
+        private System.Windows.Forms.CheckBox cb_UseSettingStockData;
+        private System.Windows.Forms.Button b_SaveToExcel;
+        private System.Windows.Forms.CheckBox cb_UseSettingsFavLocal;
     }
 }
