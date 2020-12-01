@@ -8,6 +8,7 @@ namespace StockAnalysis
 {
     static class Program
     {
+        //s
         /// <summary>
         ///  The main entry point for the application.
         /// </summary>
