@@ -12,7 +12,7 @@ namespace StockAnalysis.UserControls
 
     public partial class p5_Settings_UI : UserControl
     {
-        private SettingsConfig m_SettingsConfig;
+        public SettingsConfig m_SettingsConfig;
 
         public p5_Settings_UI()
         {
