@@ -29,7 +29,6 @@
         private void InitializeComponent()
         {
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.lt_Big_OperatingCash = new System.Windows.Forms.Label();
             this.lt_Big_FreeCash = new System.Windows.Forms.Label();
             this.lt_Big_Revenue = new System.Windows.Forms.Label();
             this.lt_Big_Eps = new System.Windows.Forms.Label();
@@ -59,6 +58,7 @@
             this.cb_UseSettingStockData = new System.Windows.Forms.CheckBox();
             this.b_SaveToExcel = new System.Windows.Forms.Button();
             this.cb_UseSettingsFavLocal = new System.Windows.Forms.CheckBox();
+            this.lt_Big_OperatingCash = new System.Windows.Forms.Label();
             this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -77,7 +77,6 @@
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 8.038584F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 8.038584F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 8.038584F));
-            this.tableLayoutPanel1.Controls.Add(this.lt_Big_OperatingCash, 5, 9);
             this.tableLayoutPanel1.Controls.Add(this.lt_Big_FreeCash, 4, 9);
             this.tableLayoutPanel1.Controls.Add(this.lt_Big_Revenue, 3, 9);
             this.tableLayoutPanel1.Controls.Add(this.lt_Big_Eps, 2, 9);
@@ -107,6 +106,7 @@
             this.tableLayoutPanel1.Controls.Add(this.cb_UseSettingStockData, 5, 0);
             this.tableLayoutPanel1.Controls.Add(this.b_SaveToExcel, 10, 12);
             this.tableLayoutPanel1.Controls.Add(this.cb_UseSettingsFavLocal, 10, 13);
+            this.tableLayoutPanel1.Controls.Add(this.lt_Big_OperatingCash, 6, 9);
             this.tableLayoutPanel1.Location = new System.Drawing.Point(9, 9);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 14;
@@ -130,21 +130,13 @@
             this.tableLayoutPanel1.Size = new System.Drawing.Size(862, 527);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
-            // lt_Big_OperatingCash
-            // 
-            this.lt_Big_OperatingCash.AutoSize = true;
-            this.lt_Big_OperatingCash.Location = new System.Drawing.Point(378, 333);
-            this.lt_Big_OperatingCash.Name = "lt_Big_OperatingCash";
-            this.lt_Big_OperatingCash.Size = new System.Drawing.Size(63, 37);
-            this.lt_Big_OperatingCash.TabIndex = 3;
-            this.lt_Big_OperatingCash.Text = "Operating Cash Flow:";
-            // 
             // lt_Big_FreeCash
             // 
             this.lt_Big_FreeCash.AutoSize = true;
+            this.tableLayoutPanel1.SetColumnSpan(this.lt_Big_FreeCash, 2);
             this.lt_Big_FreeCash.Location = new System.Drawing.Point(309, 333);
             this.lt_Big_FreeCash.Name = "lt_Big_FreeCash";
-            this.lt_Big_FreeCash.Size = new System.Drawing.Size(61, 30);
+            this.lt_Big_FreeCash.Size = new System.Drawing.Size(89, 15);
             this.lt_Big_FreeCash.TabIndex = 3;
             this.lt_Big_FreeCash.Text = "Free Cash Flow:";
             // 
@@ -374,6 +366,7 @@
             this.b_GetLocalData.TabIndex = 1;
             this.b_GetLocalData.Text = "Get Stock Data";
             this.b_GetLocalData.UseVisualStyleBackColor = true;
+            this.b_GetLocalData.Click += new System.EventHandler(this.b_GetLocalData_Click);
             // 
             // cb_UseSettingStockData
             // 
@@ -406,6 +399,16 @@
             this.cb_UseSettingsFavLocal.TabIndex = 4;
             this.cb_UseSettingsFavLocal.Text = "Use Settings";
             this.cb_UseSettingsFavLocal.UseVisualStyleBackColor = true;
+            // 
+            // lt_Big_OperatingCash
+            // 
+            this.lt_Big_OperatingCash.AutoSize = true;
+            this.tableLayoutPanel1.SetColumnSpan(this.lt_Big_OperatingCash, 2);
+            this.lt_Big_OperatingCash.Location = new System.Drawing.Point(447, 333);
+            this.lt_Big_OperatingCash.Name = "lt_Big_OperatingCash";
+            this.lt_Big_OperatingCash.Size = new System.Drawing.Size(120, 15);
+            this.lt_Big_OperatingCash.TabIndex = 3;
+            this.lt_Big_OperatingCash.Text = "Operating Cash Flow:";
             // 
             // p1_CalculateStockData_UI
             // 

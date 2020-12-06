@@ -66,6 +66,7 @@
             this.b_StocksKeyRatiosFiles.TabIndex = 3;
             this.b_StocksKeyRatiosFiles.Text = "Browse";
             this.b_StocksKeyRatiosFiles.UseVisualStyleBackColor = true;
+            this.b_StocksKeyRatiosFiles.Click += new System.EventHandler(this.b_StocksKeyRatiosFiles_Click);
             // 
             // l_FavoriteStocksExcel
             // 
@@ -87,6 +88,7 @@
             // 
             // tb_FavoriteStocksExcel
             // 
+            this.tb_FavoriteStocksExcel.Enabled = false;
             this.tb_FavoriteStocksExcel.Location = new System.Drawing.Point(138, 3);
             this.tb_FavoriteStocksExcel.Name = "tb_FavoriteStocksExcel";
             this.tb_FavoriteStocksExcel.Size = new System.Drawing.Size(468, 23);
@@ -94,6 +96,7 @@
             // 
             // tb_StocksKeyRatiosFiles
             // 
+            this.tb_StocksKeyRatiosFiles.Enabled = false;
             this.tb_StocksKeyRatiosFiles.Location = new System.Drawing.Point(138, 47);
             this.tb_StocksKeyRatiosFiles.Name = "tb_StocksKeyRatiosFiles";
             this.tb_StocksKeyRatiosFiles.Size = new System.Drawing.Size(468, 23);
@@ -115,7 +118,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.tableLayoutPanel1);
             this.Name = "p5_Settings_UI";
-            this.Size = new System.Drawing.Size(703, 113);
+            this.Size = new System.Drawing.Size(704, 115);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
             this.ResumeLayout(false);

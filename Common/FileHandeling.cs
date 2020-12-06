@@ -29,9 +29,9 @@ namespace StockAnalysis.Common
 
             string excelFileName = fileName.Replace(s_CsvSuffix, s_ExcelSuffix);
 
-            if(File.Exists(String.Join("\\",pathToFile, excelFileName)))
+            if(File.Exists(string.Join("\\",pathToFile, excelFileName)))
             {
-                File.Delete(String.Join("\\", pathToFile, excelFileName));
+                File.Delete(string.Join("\\", pathToFile, excelFileName));
             }
 
             IList<string> lineToWrite = await ReadCsvFileAsync(pathToFile, fileName).ConfigureAwait(false);
@@ -86,7 +86,7 @@ namespace StockAnalysis.Common
         {
             string fileText;
 
-            using (StreamReader streamReader = new StreamReader(String.Join("\\",pathToFile, fileName)))
+            using (StreamReader streamReader = new StreamReader(string.Join("\\",pathToFile, fileName)))
             {
                 fileText = await streamReader.ReadToEndAsync().ConfigureAwait(false);
             }

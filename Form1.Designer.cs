@@ -210,10 +210,10 @@
         private System.Windows.Forms.Button b_CalculateStockData_p1;
         private System.Windows.Forms.Button b_About_p6;
         private System.Windows.Forms.Button b_UpdateExcel_p4;
-        private UserControls.p1_CalculateStockData_UI p1_CalculateStockData_ui;
         private UserControls.p2_CalculateIntrinsicValue_UI p2_CalculateIntrinsicValue_ui;
         private System.Windows.Forms.Label p6_l_AboutLabel;
         private UserControls.p5_Settings_UI p5_Settings_ui;
+        public UserControls.p1_CalculateStockData_UI p1_CalculateStockData_ui;
     }
 }
 
