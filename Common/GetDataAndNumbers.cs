@@ -21,16 +21,24 @@ namespace StockAnalysis.Common
 
         private static int s_MaxStraightEmptyLines = 5;
 
-        public static async Task<Tuple<Dictionary<StocksEnums.BigFiveNumbersDicKey,IList<string>>, Dictionary<StocksEnums.GrowthNumbersDicKey,IList<string>>>> GetStockDataAsync(string absoluteFilePath)
+        public static async Task<Tuple<Dictionary<StocksEnums.BigFiveNumbersDicKey, IList<string>>, Dictionary<StocksEnums.GrowthNumbersDicKey, IList<string>>>> GetStockDataAsync(string absoluteFilePath, string fileName = null, string folder = null)
         {
-            var BigFive = await GetBigFiveNumbersAsync(absoluteFilePath).ConfigureAwait(false);
+            string fn = fileName;
+            string fold = folder;
+
+            if (string.IsNullOrWhiteSpace(fn) || string.IsNullOrWhiteSpace(fold))
+            {
+                (fold, fn) = FileHandling.SplitToNameAndPath(absoluteFilePath);
+            }
+
+            var BigFive = await GetBigFiveNumbersAsync(absoluteFilePath, fold, fn).ConfigureAwait(false);
 
             var BigGrowths = await GetBigFiveGrowth(BigFive).ConfigureAwait(false);
 
             return new Tuple<Dictionary<StocksEnums.BigFiveNumbersDicKey, IList<string>>, Dictionary<StocksEnums.GrowthNumbersDicKey, IList<string>>>(BigFive, BigGrowths);
         }
 
-        public static void ShowStockData(ref Dictionary<StocksEnums.BigFiveNumbersDicKey, IList<string>>  BigFive, ref Dictionary<StocksEnums.GrowthNumbersDicKey, IList<string>>  BigGrowths, TableLayoutPanel p1_LayoutPanel)
+        public static void ShowStockData(ref Dictionary<StocksEnums.BigFiveNumbersDicKey, IList<string>> BigFive, ref Dictionary<StocksEnums.GrowthNumbersDicKey, IList<string>> BigGrowths, TableLayoutPanel p1_LayoutPanel)
         {
             for (int row = 2; row <= 7; row++)
             {
@@ -57,32 +65,32 @@ namespace StockAnalysis.Common
 
         private static double? CalculateGrowth(double? oldVal, double? currentVal, int years)
         {
-            if(oldVal == null || currentVal  == null) 
+            if (oldVal == null || currentVal == null)
             {
                 return null;
             }
-            if(oldVal <= 0.0 && currentVal > 0.0)
+            if (oldVal <= 0.0 && currentVal > 0.0)
             {
                 return 999.9;
             }
-            if(oldVal > 0.0 && currentVal <= 0.0)
+            if (oldVal > 0.0 && currentVal <= 0.0)
             {
                 return -999.9;
             }
 
-            var gr = Math.Pow((double)currentVal/(double)oldVal, 1.0 / (double)years)-1;
+            var gr = Math.Pow((double)currentVal / (double)oldVal, 1.0 / (double)years) - 1;
 
             return gr * 100;
         }
 
-        private static async Task<Dictionary<StocksEnums.BigFiveNumbersDicKey, IList<string>>> GetBigFiveNumbersAsync(string filePath, string fileName = null, string folder = null)
+        private static async Task<Dictionary<StocksEnums.BigFiveNumbersDicKey, IList<string>>> GetBigFiveNumbersAsync(string filePath, string folder = null, string fileName = null)
         {
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
             Dictionary<StocksEnums.BigFiveNumbersDicKey, IList<string>> BigFiveNumbers = new Dictionary<StocksEnums.BigFiveNumbersDicKey, IList<string>>();
 
             FileInfo fileInfo = new FileInfo(filePath);
-            if (!fileInfo.Exists) 
+            if (!fileInfo.Exists)
             {
                 throw new MissingFileException(fileName, folder);
             }
@@ -95,7 +103,7 @@ namespace StockAnalysis.Common
                 int RevenueLineNumber = 0, EpsLineNumber = 0, BookValueLineNumber = 0, FreeCashFlowLineNumber = 0, OperatingCashFlowLineNumber = 0, RoicLineNumber = 0;
 
                 int StraightEmptyLines = 0, line = 1;
-                while(StraightEmptyLines < s_MaxStraightEmptyLines)
+                while (StraightEmptyLines < s_MaxStraightEmptyLines)
                 {
                     line++;
                     string? cellValue = (string)sheet.Cells[line, 1].Value;
@@ -105,27 +113,27 @@ namespace StockAnalysis.Common
                         StraightEmptyLines++;
                         continue;
                     }
-                    if (RevenueLineNumber==0 && cellValue.StartsWith("Revenue"))
+                    if (RevenueLineNumber == 0 && cellValue.StartsWith("Revenue"))
                     {
                         foundCat++;
                         RevenueLineNumber = line;
                     }
-                    else if (EpsLineNumber==0 && cellValue.StartsWith("Earnings Per Share"))
+                    else if (EpsLineNumber == 0 && cellValue.StartsWith("Earnings Per Share"))
                     {
                         foundCat++;
                         EpsLineNumber = line;
                     }
-                    else if (BookValueLineNumber==0 && cellValue.StartsWith("Book Value Per Share"))
+                    else if (BookValueLineNumber == 0 && cellValue.StartsWith("Book Value Per Share"))
                     {
                         foundCat++;
                         BookValueLineNumber = line;
                     }
-                    else if (OperatingCashFlowLineNumber==0 && cellValue.StartsWith("Operating Cash Flow"))
+                    else if (OperatingCashFlowLineNumber == 0 && cellValue.StartsWith("Operating Cash Flow"))
                     {
                         foundCat++;
                         OperatingCashFlowLineNumber = line;
                     }
-                    else if (FreeCashFlowLineNumber==0 && cellValue.StartsWith("Free Cash Flow"))
+                    else if (FreeCashFlowLineNumber == 0 && cellValue.StartsWith("Free Cash Flow"))
                     {
                         foundCat++;
                         FreeCashFlowLineNumber = line;
@@ -184,15 +192,15 @@ namespace StockAnalysis.Common
                     }
                     string checks = check.ToString();
                     double val = 0.0;
-                    if(double.TryParse(checks,out val))
+                    if (double.TryParse(checks, out val))
                     {
                         parameterValues.Add(val.ToString("0.##"));
                     }
-                    else 
+                    else
                     {
                         throw new BadOrCorruptedFileException($"found a non double value in line: {lineNumber}");
                     }
-                    
+
                 }
 
                 return (IList<string?>)parameterValues;
@@ -220,7 +228,7 @@ namespace StockAnalysis.Common
             return BigFiveGrowth;
         }
 
-        private static  Task<IList<string?>> GetAllAverage(IList<string> Numbers)
+        private static Task<IList<string?>> GetAllAverage(IList<string> Numbers)
         {
             return Task.Run(() =>
             {

@@ -14,10 +14,9 @@ namespace StockAnalysis.Common
 
     using OfficeOpenXml;
 
-    using Extensions;
     using Exceptions;
 
-    public static class FileHandeling
+    public static class FileHandling
     {
         private static string s_ExcelSuffix = ".xlsx";
 
@@ -29,15 +28,32 @@ namespace StockAnalysis.Common
 
             string excelFileName = fileName.Replace(s_CsvSuffix, s_ExcelSuffix);
 
-            if(File.Exists(string.Join("\\",pathToFile, excelFileName)))
+            string csvFileName = fileName.Replace(s_ExcelSuffix, s_CsvSuffix);
+
+            if (!File.Exists(string.Join("\\", pathToFile, csvFileName)))
+            {
+                throw new MissingFileException(csvFileName, pathToFile);
+            }
+
+            if (File.Exists(string.Join("\\",pathToFile, excelFileName)))
             {
                 File.Delete(string.Join("\\", pathToFile, excelFileName));
             }
 
-            IList<string> lineToWrite = await ReadCsvFileAsync(pathToFile, fileName).ConfigureAwait(false);
+            IList<string> lineToWrite = await ReadCsvFileAsync(pathToFile, csvFileName).ConfigureAwait(false);
 
             await WriteToExcelAsync(lineToWrite, pathToFile, excelFileName).ConfigureAwait(false);
 
+        }
+
+        public static Tuple<string, string> SplitToNameAndPath(string absolutePath)
+        {
+            int splitIndex = absolutePath.LastIndexOf("\\");
+            int fileNameLength = absolutePath.Length - 1 - splitIndex;
+            int folderPathLength = splitIndex;
+            string fileName = absolutePath.Substring(splitIndex + 1, fileNameLength);
+            string folderPath = absolutePath.Substring(0, folderPathLength);
+            return new Tuple<string, string>(folderPath, fileName);
         }
 
         private static async Task WriteToExcelAsync(IList<string> linesToWrite, string pathToFile, string fileName)

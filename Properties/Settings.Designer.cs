@@ -58,7 +58,7 @@ namespace StockAnalysis.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Key Ratios.xlsx")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Key_Ratios.xlsx")]
         public string KeyRatiosFileNameExtension {
             get {
                 return ((string)(this["KeyRatiosFileNameExtension"]));

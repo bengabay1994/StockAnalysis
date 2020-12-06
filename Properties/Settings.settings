@@ -12,7 +12,7 @@
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="KeyRatiosFileNameExtension" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">Key Ratios.xlsx</Value>
+      <Value Profile="(Default)">Key_Ratios.xlsx</Value>
     </Setting>
   </Settings>
 </SettingsFile>

@@ -14,6 +14,7 @@ namespace StockAnalysis.UserControls
         public p1_CalculateStockData_UI()
         {
             InitializeComponent();
+            ControlsHelperFunctions.CreateStockDataLabels(this.tableLayoutPanel1);
         }
 
         private void b_GetOnlineData_Click(object sender, EventArgs e)
@@ -28,7 +29,7 @@ namespace StockAnalysis.UserControls
             symbol = symbol.ToUpperInvariant();
             MessageBox.Show("Downloading File...", "Donwload");
 
-            FileHandeling.DownloadKeyRatioFile(symbol);
+            FileHandling.DownloadKeyRatioFile(symbol);
         }
 
         private async void b_GetLocalData_Click(object sender, EventArgs e)
@@ -51,11 +52,12 @@ namespace StockAnalysis.UserControls
                     return;
                 }
                 stockSymbol = stockSymbol.ToUpperInvariant();
-                string fileName = string.Join(" ", stockSymbol, Properties.Settings.Default.KeyRatiosFileNameExtension);
+                string fileName = string.Join("_", stockSymbol, Properties.Settings.Default.KeyRatiosFileNameExtension);
                 string filePath = string.Join("\\", folderPath, fileName);
                 try
                 {
-                    (BigFive, BigGrowths) = await GetDataAndNumbers.GetStockDataAsync(filePath).ConfigureAwait(false);
+                    await FileHandling.ConvertCsvToXlsxAsync(folderPath, fileName).ConfigureAwait(false);
+                    (BigFive, BigGrowths) = await GetDataAndNumbers.GetStockDataAsync(filePath, folderPath, fileName).ConfigureAwait(false);
                     if (this.tableLayoutPanel1.InvokeRequired)
                     {
                         this.tableLayoutPanel1.Invoke(new MethodInvoker(delegate {
@@ -76,7 +78,7 @@ namespace StockAnalysis.UserControls
                     }
                     else if (exc is MissingFileException)
                     {
-                        MessageBox.Show($"Can't find file: {fileName} inside folder: {filePath}", "Missing File", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show($"Can't find file: {fileName} inside folder: {folderPath}", "Missing File", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                     else
                     {
@@ -94,7 +96,10 @@ namespace StockAnalysis.UserControls
                     string filePath = fd.FileName;
                     try
                     {
-                        (BigFive, BigGrowths) =  await GetDataAndNumbers.GetStockDataAsync(filePath).ConfigureAwait(false);
+                        string folderPath, fileName;
+                        (folderPath, fileName) = FileHandling.SplitToNameAndPath(filePath);
+                        await FileHandling.ConvertCsvToXlsxAsync(folderPath, fileName).ConfigureAwait(false);
+                        (BigFive, BigGrowths) =  await GetDataAndNumbers.GetStockDataAsync(filePath, folderPath, fileName).ConfigureAwait(false);
                         if (this.tableLayoutPanel1.InvokeRequired)
                         {
                             this.tableLayoutPanel1.Invoke( new MethodInvoker(delegate {
@@ -104,7 +109,6 @@ namespace StockAnalysis.UserControls
                         else
                         {
                             GetDataAndNumbers.ShowStockData(ref BigFive, ref BigGrowths, this.tableLayoutPanel1);
-
                         }
 
                     }
