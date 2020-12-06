@@ -36,34 +36,23 @@ namespace StockAnalysis.Common
             {
                 for (int column = 1; column <= 11; column++)
                 {
-                    Label temp = CreateStockDataLabel(BigFive[(StocksEnums.BigFiveNumbersDicKey)row][column - 1], column, row);
-                    p1_LayoutPanel.Controls.Add(temp, column, row);
+                    string text = BigFive[(StocksEnums.BigFiveNumbersDicKey)row][column - 1];
+                    p1_LayoutPanel.Controls.Find($"templ{row}{column}", false)[0].Text = text == null ? "N/A" : text;
                 }
             }
 
             for (int row = 10; row <= 12; row++)
             {
-                for (int column = 0; column <= 6; column++)
+                for (int column = 1; column <= 7; column++)
                 {
-                    if (column == 5)
+                    if (column == 6)
                     {
                         continue;
                     }
-                    Label temp = CreateStockDataLabel($": {BigGrowths[(StocksEnums.GrowthNumbersDicKey)column][row - 10]}", column, row);
-                    p1_LayoutPanel.Controls.Add(temp, column, row);
+                    string text = BigGrowths[(StocksEnums.GrowthNumbersDicKey)column][row - 10];
+                    p1_LayoutPanel.Controls.Find($"templ{row}{column}", false)[0].Text = text == null ? "N/A" : text;
                 }
             }
-        }
-
-        private static Label CreateStockDataLabel(string value, int column, int row, StocksEnums.GrowthAndAverageLength? length = null)
-        {
-            string text = string.Concat(length == null ? "" : nameof(length), value == null ? "N/A" : value);
-            Label l = new Label();
-            l.AutoSize = true;
-            l.Name = $"templ{row}{column}";
-            l.Size = new System.Drawing.Size(59, 30);
-            l.Text = text;
-            return l;
         }
 
         private static double? CalculateGrowth(double? oldVal, double? currentVal, int years)
@@ -86,13 +75,17 @@ namespace StockAnalysis.Common
             return gr * 100;
         }
 
-        private static async Task<Dictionary<StocksEnums.BigFiveNumbersDicKey, IList<string>>> GetBigFiveNumbersAsync(string filePath)
+        private static async Task<Dictionary<StocksEnums.BigFiveNumbersDicKey, IList<string>>> GetBigFiveNumbersAsync(string filePath, string fileName = null, string folder = null)
         {
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
             Dictionary<StocksEnums.BigFiveNumbersDicKey, IList<string>> BigFiveNumbers = new Dictionary<StocksEnums.BigFiveNumbersDicKey, IList<string>>();
 
             FileInfo fileInfo = new FileInfo(filePath);
+            if (!fileInfo.Exists) 
+            {
+                throw new MissingFileException(fileName, folder);
+            }
             using (ExcelPackage excelPackage = new ExcelPackage(fileInfo))
             {
                 var sheet = excelPackage.Workbook.Worksheets[0];

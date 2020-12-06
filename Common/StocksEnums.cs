@@ -25,22 +25,13 @@ namespace StockAnalysis.Common
 
         public enum GrowthNumbersDicKey
         {
-            Roic = 0,
-            BookValue = 1,
-            Eps = 2,
-            Revenue = 3,
-            FreeCashFlow = 4,
-            OperatingCashFlow = 6,
+            Roic = 1,
+            BookValue = 2,
+            Eps = 3,
+            Revenue = 4,
+            FreeCashFlow = 5,
+            OperatingCashFlow = 7,
         }
 
-        public enum GrowthAndAverageLength 
-        {
-            One = 2,
-            Five = 6,
-            Nine = 9,
-            LatestTen = 10,
-            LatestFive = 5,
-            LatestOne = 1
-        }
     }
 }

@@ -20,11 +20,12 @@ namespace StockAnalysis.UserControls
         {
             string symbol = tb_Symbol.Text;
 
-            if (!symbol.All(Char.IsLetter))
+            if (!symbol.All(Char.IsLetter) || string.IsNullOrWhiteSpace(symbol))
             {
                 MessageBox.Show("Please Enter a Valid Stock Symbol","Wrong Symbol", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
+            symbol = symbol.ToUpperInvariant();
             MessageBox.Show("Downloading File...", "Donwload");
 
             FileHandeling.DownloadKeyRatioFile(symbol);
@@ -37,7 +38,52 @@ namespace StockAnalysis.UserControls
 
             if (cb_UseSettingStockData.Checked)
             {
-                
+                string folderPath = Properties.Settings.Default.StocksKeyRatiosLocation;
+                if(string.IsNullOrWhiteSpace(folderPath))
+                {
+                    MessageBox.Show("Please choose a valid settings in the setting tab for the data files location", "Invalid Settings", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+                string stockSymbol = tb_Symbol.Text;
+                if (!stockSymbol.All(Char.IsLetter))
+                {
+                    MessageBox.Show("Please Enter a Valid Stock Symbol", "Wrong Symbol", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+                stockSymbol = stockSymbol.ToUpperInvariant();
+                string fileName = string.Join(" ", stockSymbol, Properties.Settings.Default.KeyRatiosFileNameExtension);
+                string filePath = string.Join("\\", folderPath, fileName);
+                try
+                {
+                    (BigFive, BigGrowths) = await GetDataAndNumbers.GetStockDataAsync(filePath).ConfigureAwait(false);
+                    if (this.tableLayoutPanel1.InvokeRequired)
+                    {
+                        this.tableLayoutPanel1.Invoke(new MethodInvoker(delegate {
+                            GetDataAndNumbers.ShowStockData(ref BigFive, ref BigGrowths, this.tableLayoutPanel1);
+                        }));
+                    }
+                    else
+                    {
+                        GetDataAndNumbers.ShowStockData(ref BigFive, ref BigGrowths, this.tableLayoutPanel1);
+                    }
+
+                }
+                catch (Exception exc)
+                {
+                    if (exc is BadOrCorruptedFileException)
+                    {
+                        MessageBox.Show("Invalid file has been choosen ", "Bad File", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    }
+                    else if (exc is MissingFileException)
+                    {
+                        MessageBox.Show($"Can't find file: {fileName} inside folder: {filePath}", "Missing File", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Error has occurred", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                    // write exception to log file.
+                }
             }
             else
             {

@@ -1,5 +1,7 @@
 ﻿namespace StockAnalysis.UserControls
 {
+    using Common;
+
     partial class p1_CalculateStockData_UI
     {
         /// <summary> 
@@ -59,6 +61,9 @@
             this.b_SaveToExcel = new System.Windows.Forms.Button();
             this.cb_UseSettingsFavLocal = new System.Windows.Forms.CheckBox();
             this.lt_Big_OperatingCash = new System.Windows.Forms.Label();
+            this.l_NineYears = new System.Windows.Forms.Label();
+            this.l_FiveYear = new System.Windows.Forms.Label();
+            this.l_OneYear = new System.Windows.Forms.Label();
             this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -77,11 +82,6 @@
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 8.038584F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 8.038584F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 8.038584F));
-            this.tableLayoutPanel1.Controls.Add(this.lt_Big_FreeCash, 4, 9);
-            this.tableLayoutPanel1.Controls.Add(this.lt_Big_Revenue, 3, 9);
-            this.tableLayoutPanel1.Controls.Add(this.lt_Big_Eps, 2, 9);
-            this.tableLayoutPanel1.Controls.Add(this.lt_Big_Equity, 1, 9);
-            this.tableLayoutPanel1.Controls.Add(this.lt_Big_Roic, 0, 9);
             this.tableLayoutPanel1.Controls.Add(this.lt_big_big5Numbers, 5, 8);
             this.tableLayoutPanel1.Controls.Add(this.lt_Data_Roic, 0, 7);
             this.tableLayoutPanel1.Controls.Add(this.lt_Data_OperatingCash, 0, 6);
@@ -106,7 +106,16 @@
             this.tableLayoutPanel1.Controls.Add(this.cb_UseSettingStockData, 5, 0);
             this.tableLayoutPanel1.Controls.Add(this.b_SaveToExcel, 10, 12);
             this.tableLayoutPanel1.Controls.Add(this.cb_UseSettingsFavLocal, 10, 13);
-            this.tableLayoutPanel1.Controls.Add(this.lt_Big_OperatingCash, 6, 9);
+            this.tableLayoutPanel1.Controls.Add(this.lt_Big_OperatingCash, 7, 9);
+            this.tableLayoutPanel1.Controls.Add(this.lt_Big_FreeCash, 5, 9);
+            this.tableLayoutPanel1.Controls.Add(this.lt_Big_Revenue, 4, 9);
+            this.tableLayoutPanel1.Controls.Add(this.lt_Big_Eps, 3, 9);
+            this.tableLayoutPanel1.Controls.Add(this.lt_Big_Equity, 2, 9);
+            this.tableLayoutPanel1.Controls.Add(this.lt_Big_Roic, 1, 9);
+            this.tableLayoutPanel1.Controls.Add(this.l_NineYears, 0, 10);
+            this.tableLayoutPanel1.Controls.Add(this.l_FiveYear, 0, 11);
+            this.tableLayoutPanel1.Controls.Add(this.l_OneYear, 0, 12);
+            ControlsHelperFunctions.CreateStockDataLabels(this.tableLayoutPanel1);
             this.tableLayoutPanel1.Location = new System.Drawing.Point(9, 9);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 14;
@@ -134,7 +143,7 @@
             // 
             this.lt_Big_FreeCash.AutoSize = true;
             this.tableLayoutPanel1.SetColumnSpan(this.lt_Big_FreeCash, 2);
-            this.lt_Big_FreeCash.Location = new System.Drawing.Point(309, 333);
+            this.lt_Big_FreeCash.Location = new System.Drawing.Point(378, 333);
             this.lt_Big_FreeCash.Name = "lt_Big_FreeCash";
             this.lt_Big_FreeCash.Size = new System.Drawing.Size(89, 15);
             this.lt_Big_FreeCash.TabIndex = 3;
@@ -143,7 +152,7 @@
             // lt_Big_Revenue
             // 
             this.lt_Big_Revenue.AutoSize = true;
-            this.lt_Big_Revenue.Location = new System.Drawing.Point(240, 333);
+            this.lt_Big_Revenue.Location = new System.Drawing.Point(309, 333);
             this.lt_Big_Revenue.Name = "lt_Big_Revenue";
             this.lt_Big_Revenue.Size = new System.Drawing.Size(55, 15);
             this.lt_Big_Revenue.TabIndex = 3;
@@ -152,7 +161,7 @@
             // lt_Big_Eps
             // 
             this.lt_Big_Eps.AutoSize = true;
-            this.lt_Big_Eps.Location = new System.Drawing.Point(171, 333);
+            this.lt_Big_Eps.Location = new System.Drawing.Point(240, 333);
             this.lt_Big_Eps.Name = "lt_Big_Eps";
             this.lt_Big_Eps.Size = new System.Drawing.Size(29, 15);
             this.lt_Big_Eps.TabIndex = 3;
@@ -161,7 +170,7 @@
             // lt_Big_Equity
             // 
             this.lt_Big_Equity.AutoSize = true;
-            this.lt_Big_Equity.Location = new System.Drawing.Point(102, 333);
+            this.lt_Big_Equity.Location = new System.Drawing.Point(171, 333);
             this.lt_Big_Equity.Name = "lt_Big_Equity";
             this.lt_Big_Equity.Size = new System.Drawing.Size(43, 15);
             this.lt_Big_Equity.TabIndex = 3;
@@ -170,7 +179,7 @@
             // lt_Big_Roic
             // 
             this.lt_Big_Roic.AutoSize = true;
-            this.lt_Big_Roic.Location = new System.Drawing.Point(3, 333);
+            this.lt_Big_Roic.Location = new System.Drawing.Point(102, 333);
             this.lt_Big_Roic.Name = "lt_Big_Roic";
             this.lt_Big_Roic.Size = new System.Drawing.Size(37, 15);
             this.lt_Big_Roic.TabIndex = 3;
@@ -242,7 +251,7 @@
             // tl_Data_Year9
             // 
             this.tl_Data_Year9.AutoSize = true;
-            this.tl_Data_Year9.Location = new System.Drawing.Point(654, 37);
+            this.tl_Data_Year9.Location = new System.Drawing.Point(585, 37);
             this.tl_Data_Year9.Name = "tl_Data_Year9";
             this.tl_Data_Year9.Size = new System.Drawing.Size(35, 15);
             this.tl_Data_Year9.TabIndex = 2;
@@ -260,7 +269,7 @@
             // tl_Data_Year3
             // 
             this.tl_Data_Year3.AutoSize = true;
-            this.tl_Data_Year3.Location = new System.Drawing.Point(171, 37);
+            this.tl_Data_Year3.Location = new System.Drawing.Point(240, 37);
             this.tl_Data_Year3.Name = "tl_Data_Year3";
             this.tl_Data_Year3.Size = new System.Drawing.Size(35, 15);
             this.tl_Data_Year3.TabIndex = 2;
@@ -297,7 +306,7 @@
             // tl_Data_Year2
             // 
             this.tl_Data_Year2.AutoSize = true;
-            this.tl_Data_Year2.Location = new System.Drawing.Point(240, 37);
+            this.tl_Data_Year2.Location = new System.Drawing.Point(171, 37);
             this.tl_Data_Year2.Name = "tl_Data_Year2";
             this.tl_Data_Year2.Size = new System.Drawing.Size(35, 15);
             this.tl_Data_Year2.TabIndex = 2;
@@ -324,7 +333,7 @@
             // tl_Data_Year8
             // 
             this.tl_Data_Year8.AutoSize = true;
-            this.tl_Data_Year8.Location = new System.Drawing.Point(585, 37);
+            this.tl_Data_Year8.Location = new System.Drawing.Point(654, 37);
             this.tl_Data_Year8.Name = "tl_Data_Year8";
             this.tl_Data_Year8.Size = new System.Drawing.Size(35, 15);
             this.tl_Data_Year8.TabIndex = 2;
@@ -404,11 +413,38 @@
             // 
             this.lt_Big_OperatingCash.AutoSize = true;
             this.tableLayoutPanel1.SetColumnSpan(this.lt_Big_OperatingCash, 2);
-            this.lt_Big_OperatingCash.Location = new System.Drawing.Point(447, 333);
+            this.lt_Big_OperatingCash.Location = new System.Drawing.Point(516, 333);
             this.lt_Big_OperatingCash.Name = "lt_Big_OperatingCash";
             this.lt_Big_OperatingCash.Size = new System.Drawing.Size(120, 15);
             this.lt_Big_OperatingCash.TabIndex = 3;
             this.lt_Big_OperatingCash.Text = "Operating Cash Flow:";
+            // 
+            // l_NineYears
+            // 
+            this.l_NineYears.AutoSize = true;
+            this.l_NineYears.Location = new System.Drawing.Point(3, 370);
+            this.l_NineYears.Name = "l_NineYears";
+            this.l_NineYears.Size = new System.Drawing.Size(46, 15);
+            this.l_NineYears.TabIndex = 6;
+            this.l_NineYears.Text = "9 Years:";
+            // 
+            // l_FiveYear
+            // 
+            this.l_FiveYear.AutoSize = true;
+            this.l_FiveYear.Location = new System.Drawing.Point(3, 407);
+            this.l_FiveYear.Name = "l_FiveYear";
+            this.l_FiveYear.Size = new System.Drawing.Size(46, 15);
+            this.l_FiveYear.TabIndex = 6;
+            this.l_FiveYear.Text = "5 Years:";
+            // 
+            // l_OneYear
+            // 
+            this.l_OneYear.AutoSize = true;
+            this.l_OneYear.Location = new System.Drawing.Point(3, 444);
+            this.l_OneYear.Name = "l_OneYear";
+            this.l_OneYear.Size = new System.Drawing.Size(56, 15);
+            this.l_OneYear.TabIndex = 6;
+            this.l_OneYear.Text = "Last Year:";
             // 
             // p1_CalculateStockData_UI
             // 
@@ -456,5 +492,8 @@
         private System.Windows.Forms.CheckBox cb_UseSettingStockData;
         private System.Windows.Forms.Button b_SaveToExcel;
         private System.Windows.Forms.CheckBox cb_UseSettingsFavLocal;
+        private System.Windows.Forms.Label l_NineYears;
+        private System.Windows.Forms.Label l_FiveYear;
+        private System.Windows.Forms.Label l_OneYear;
     }
 }

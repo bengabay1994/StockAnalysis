@@ -55,5 +55,14 @@ namespace StockAnalysis.Properties {
                 this["StocksKeyRatiosLocation"] = value;
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Key Ratios.xlsx")]
+        public string KeyRatiosFileNameExtension {
+            get {
+                return ((string)(this["KeyRatiosFileNameExtension"]));
+            }
+        }
     }
 }
