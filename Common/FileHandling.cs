@@ -33,7 +33,7 @@ namespace StockAnalysis.Common
 
             if (!File.Exists(string.Join("\\", pathToFile, csvFileName)))
             {
-                throw new MissingFileException(csvFileName, pathToFile);
+                throw new MissingFileException(pathToFile, csvFileName);
             }
 
             if (File.Exists(string.Join("\\",pathToFile, excelFileName)))
@@ -183,6 +183,43 @@ namespace StockAnalysis.Common
                 worksheet.Cells["A1:V10000"].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
 
                 await excelPackage.SaveAsAsync(excelFileInfo);
+            }
+        }
+
+        private static int FindLineToSaveIn(string symbol)
+        {
+            if (string.IsNullOrWhiteSpace(Properties.Settings.Default.FavoritStocksExcelLocation))
+            {
+                throw new MissConfigurationException(nameof(Properties.Settings.Default.FavoritStocksExcelLocation));
+            }
+            string filePath = string.Join("\\", Properties.Settings.Default.FavoritStocksExcelLocation, Properties.Settings.Default.FavoriteStocksExcelName);
+
+            FileInfo excelFileInfo = new FileInfo(filePath);
+
+            string fileName, folder;
+
+            (folder, fileName) = SplitToNameAndPath(filePath);
+
+            if (!excelFileInfo.Exists)
+            {
+                throw new MissingFileException(folder, fileName);
+            }
+
+            using (ExcelPackage excelPackage = new ExcelPackage(excelFileInfo))
+            {
+                var ws = excelPackage.Workbook.Worksheets[0];
+
+                int line = 1;
+
+                while (true)
+                {
+                    if(string.IsNullOrWhiteSpace(ws.Cells[line, 2].Value.ToString()) || string.Equals(symbol, ws.Cells[line, 2].Value.ToString(), StringComparison.OrdinalIgnoreCase))
+                    {
+                        return line;
+                    }
+
+                    line++;
+                }
             }
         }
 

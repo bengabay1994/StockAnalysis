@@ -53,8 +53,6 @@
             this.tl_Data_Year10 = new System.Windows.Forms.Label();
             this.b_GetLocalData = new System.Windows.Forms.Button();
             this.cb_UseSettingStockData = new System.Windows.Forms.CheckBox();
-            this.b_SaveToExcel = new System.Windows.Forms.Button();
-            this.cb_UseSettingsFavLocal = new System.Windows.Forms.CheckBox();
             this.lt_Big_OperatingCash = new System.Windows.Forms.Label();
             this.lt_Big_FreeCash = new System.Windows.Forms.Label();
             this.lt_Big_Revenue = new System.Windows.Forms.Label();
@@ -64,7 +62,16 @@
             this.l_NineYears = new System.Windows.Forms.Label();
             this.l_FiveYear = new System.Windows.Forms.Label();
             this.l_OneYear = new System.Windows.Forms.Label();
+            this.b_SaveToExcel = new System.Windows.Forms.Button();
+            this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
+            this.rb_Green = new System.Windows.Forms.RadioButton();
+            this.rb_Red = new System.Windows.Forms.RadioButton();
+            this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
+            this.rb_OperatingCash = new System.Windows.Forms.RadioButton();
+            this.rb_Cash = new System.Windows.Forms.RadioButton();
             this.tableLayoutPanel1.SuspendLayout();
+            this.tableLayoutPanel2.SuspendLayout();
+            this.tableLayoutPanel3.SuspendLayout();
             this.SuspendLayout();
             // 
             // tableLayoutPanel1
@@ -114,7 +121,8 @@
             this.tableLayoutPanel1.Controls.Add(this.l_FiveYear, 0, 11);
             this.tableLayoutPanel1.Controls.Add(this.l_OneYear, 0, 12);
             this.tableLayoutPanel1.Controls.Add(this.b_SaveToExcel, 10, 9);
-            this.tableLayoutPanel1.Controls.Add(this.cb_UseSettingsFavLocal, 10, 10);
+            this.tableLayoutPanel1.Controls.Add(this.tableLayoutPanel2, 9, 10);
+            this.tableLayoutPanel1.Controls.Add(this.tableLayoutPanel3, 9, 11);
             this.tableLayoutPanel1.Location = new System.Drawing.Point(9, 9);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 14;
@@ -341,27 +349,6 @@
             this.cb_UseSettingStockData.Text = "Use Settings";
             this.cb_UseSettingStockData.UseVisualStyleBackColor = true;
             // 
-            // b_SaveToExcel
-            // 
-            this.tableLayoutPanel1.SetColumnSpan(this.b_SaveToExcel, 2);
-            this.b_SaveToExcel.Location = new System.Drawing.Point(723, 336);
-            this.b_SaveToExcel.Name = "b_SaveToExcel";
-            this.b_SaveToExcel.Size = new System.Drawing.Size(99, 23);
-            this.b_SaveToExcel.TabIndex = 5;
-            this.b_SaveToExcel.Text = "Save Stock";
-            this.b_SaveToExcel.UseVisualStyleBackColor = true;
-            // 
-            // cb_UseSettingsFavLocal
-            // 
-            this.cb_UseSettingsFavLocal.AutoSize = true;
-            this.tableLayoutPanel1.SetColumnSpan(this.cb_UseSettingsFavLocal, 2);
-            this.cb_UseSettingsFavLocal.Location = new System.Drawing.Point(723, 373);
-            this.cb_UseSettingsFavLocal.Name = "cb_UseSettingsFavLocal";
-            this.cb_UseSettingsFavLocal.Size = new System.Drawing.Size(90, 19);
-            this.cb_UseSettingsFavLocal.TabIndex = 4;
-            this.cb_UseSettingsFavLocal.Text = "Use Settings";
-            this.cb_UseSettingsFavLocal.UseVisualStyleBackColor = true;
-            // 
             // lt_Big_OperatingCash
             // 
             this.lt_Big_OperatingCash.AutoSize = true;
@@ -445,6 +432,99 @@
             this.l_OneYear.TabIndex = 6;
             this.l_OneYear.Text = "Last Year:";
             // 
+            // b_SaveToExcel
+            // 
+            this.tableLayoutPanel1.SetColumnSpan(this.b_SaveToExcel, 2);
+            this.b_SaveToExcel.Enabled = false;
+            this.b_SaveToExcel.Location = new System.Drawing.Point(723, 336);
+            this.b_SaveToExcel.Name = "b_SaveToExcel";
+            this.b_SaveToExcel.Size = new System.Drawing.Size(99, 23);
+            this.b_SaveToExcel.TabIndex = 5;
+            this.b_SaveToExcel.Text = "Save Stock";
+            this.b_SaveToExcel.UseVisualStyleBackColor = true;
+            this.b_SaveToExcel.Click += new System.EventHandler(this.b_SaveToExcel_Click);
+            // 
+            // tableLayoutPanel2
+            // 
+            this.tableLayoutPanel2.ColumnCount = 3;
+            this.tableLayoutPanel1.SetColumnSpan(this.tableLayoutPanel2, 3);
+            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.tableLayoutPanel2.Controls.Add(this.rb_Green, 0, 0);
+            this.tableLayoutPanel2.Controls.Add(this.rb_Red, 2, 0);
+            this.tableLayoutPanel2.Location = new System.Drawing.Point(654, 373);
+            this.tableLayoutPanel2.Name = "tableLayoutPanel2";
+            this.tableLayoutPanel2.RowCount = 1;
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(205, 31);
+            this.tableLayoutPanel2.TabIndex = 7;
+            // 
+            // rb_Green
+            // 
+            this.rb_Green.AutoSize = true;
+            this.rb_Green.Location = new System.Drawing.Point(3, 3);
+            this.rb_Green.Name = "rb_Green";
+            this.rb_Green.Size = new System.Drawing.Size(56, 19);
+            this.rb_Green.TabIndex = 1;
+            this.rb_Green.TabStop = true;
+            this.rb_Green.Text = "Green";
+            this.rb_Green.UseVisualStyleBackColor = true;
+            this.rb_Green.CheckedChanged += new System.EventHandler(this.rb_Green_CheckedChanged);
+            // 
+            // rb_Red
+            // 
+            this.rb_Red.AutoSize = true;
+            this.rb_Red.Location = new System.Drawing.Point(139, 3);
+            this.rb_Red.Name = "rb_Red";
+            this.rb_Red.Size = new System.Drawing.Size(45, 19);
+            this.rb_Red.TabIndex = 0;
+            this.rb_Red.TabStop = true;
+            this.rb_Red.Text = "Red";
+            this.rb_Red.UseVisualStyleBackColor = true;
+            this.rb_Red.CheckedChanged += new System.EventHandler(this.rb_Red_CheckedChanged);
+            // 
+            // tableLayoutPanel3
+            // 
+            this.tableLayoutPanel3.ColumnCount = 3;
+            this.tableLayoutPanel1.SetColumnSpan(this.tableLayoutPanel3, 3);
+            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.tableLayoutPanel3.Controls.Add(this.rb_OperatingCash, 0, 0);
+            this.tableLayoutPanel3.Controls.Add(this.rb_Cash, 2, 0);
+            this.tableLayoutPanel3.Location = new System.Drawing.Point(654, 410);
+            this.tableLayoutPanel3.Name = "tableLayoutPanel3";
+            this.tableLayoutPanel3.RowCount = 1;
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel3.Size = new System.Drawing.Size(205, 31);
+            this.tableLayoutPanel3.TabIndex = 7;
+            // 
+            // rb_OperatingCash
+            // 
+            this.rb_OperatingCash.AutoSize = true;
+            this.tableLayoutPanel3.SetColumnSpan(this.rb_OperatingCash, 2);
+            this.rb_OperatingCash.Location = new System.Drawing.Point(3, 3);
+            this.rb_OperatingCash.Name = "rb_OperatingCash";
+            this.rb_OperatingCash.Size = new System.Drawing.Size(107, 19);
+            this.rb_OperatingCash.TabIndex = 0;
+            this.rb_OperatingCash.TabStop = true;
+            this.rb_OperatingCash.Text = "Operating Cash";
+            this.rb_OperatingCash.UseVisualStyleBackColor = true;
+            this.rb_OperatingCash.CheckedChanged += new System.EventHandler(this.rb_OperatingCash_CheckedChanged);
+            // 
+            // rb_Cash
+            // 
+            this.rb_Cash.AutoSize = true;
+            this.rb_Cash.Location = new System.Drawing.Point(139, 3);
+            this.rb_Cash.Name = "rb_Cash";
+            this.rb_Cash.Size = new System.Drawing.Size(51, 19);
+            this.rb_Cash.TabIndex = 1;
+            this.rb_Cash.TabStop = true;
+            this.rb_Cash.Text = "Cash";
+            this.rb_Cash.UseVisualStyleBackColor = true;
+            this.rb_Cash.CheckedChanged += new System.EventHandler(this.rb_Cash_CheckedChanged);
+            // 
             // p1_CalculateStockData_UI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -454,6 +534,10 @@
             this.Size = new System.Drawing.Size(884, 548);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
+            this.tableLayoutPanel2.ResumeLayout(false);
+            this.tableLayoutPanel2.PerformLayout();
+            this.tableLayoutPanel3.ResumeLayout(false);
+            this.tableLayoutPanel3.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -490,9 +574,14 @@
         private System.Windows.Forms.Button b_GetLocalData;
         private System.Windows.Forms.CheckBox cb_UseSettingStockData;
         private System.Windows.Forms.Button b_SaveToExcel;
-        private System.Windows.Forms.CheckBox cb_UseSettingsFavLocal;
         private System.Windows.Forms.Label l_NineYears;
         private System.Windows.Forms.Label l_FiveYear;
         private System.Windows.Forms.Label l_OneYear;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel3;
+        private System.Windows.Forms.RadioButton rb_OperatingCash;
+        private System.Windows.Forms.RadioButton rb_Cash;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
+        private System.Windows.Forms.RadioButton rb_Red;
+        private System.Windows.Forms.RadioButton rb_Green;
     }
 }

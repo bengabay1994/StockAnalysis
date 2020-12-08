@@ -92,7 +92,7 @@ namespace StockAnalysis.Common
             FileInfo fileInfo = new FileInfo(filePath);
             if (!fileInfo.Exists)
             {
-                throw new MissingFileException(fileName, folder);
+                throw new MissingFileException(folder, fileName);
             }
             using (ExcelPackage excelPackage = new ExcelPackage(fileInfo))
             {

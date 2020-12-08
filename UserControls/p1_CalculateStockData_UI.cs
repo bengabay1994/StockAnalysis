@@ -28,7 +28,6 @@ namespace StockAnalysis.UserControls
             }
             symbol = symbol.ToUpperInvariant();
             MessageBox.Show("Downloading File...", "Donwload");
-
             FileHandling.DownloadKeyRatioFile(symbol);
         }
 
@@ -125,6 +124,59 @@ namespace StockAnalysis.UserControls
                         // write exception to log file.
                     }
                 }
+            }
+        }
+
+        private async void b_SaveToExcel_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                await FileHandling.CreateFavStockExcelAsync();
+            }catch(Exception exc) 
+            {
+                if(exc is MissConfigurationException)
+                {
+                    MessageBox.Show(exc.Message, "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+                else
+                {
+                    MessageBox.Show("Error has occurred", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+            try
+            {
+                // save to file.
+            }catch(Exception exc)
+            {
+
+            }
+        }
+
+        private void rb_Green_CheckedChanged(object sender, EventArgs e)
+        {
+            ActivateSaveStockButton();
+        }
+
+        private void rb_Red_CheckedChanged(object sender, EventArgs e)
+        {
+            ActivateSaveStockButton();
+        }
+
+        private void rb_OperatingCash_CheckedChanged(object sender, EventArgs e)
+        {
+            ActivateSaveStockButton();
+        }
+
+        private void rb_Cash_CheckedChanged(object sender, EventArgs e)
+        {
+            ActivateSaveStockButton();
+        }
+
+        private void ActivateSaveStockButton()
+        {
+            if ((rb_Green.Checked || rb_Red.Checked) && (rb_Cash.Checked || rb_OperatingCash.Checked))
+            {
+                b_SaveToExcel.Enabled = true;
             }
         }
     }

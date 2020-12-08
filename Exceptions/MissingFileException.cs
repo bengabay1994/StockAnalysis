@@ -9,7 +9,7 @@ namespace StockAnalysis.Exceptions
         {
         }
 
-        public MissingFileException(string fileName, string folder) : base($"File {fileName} is missing in folder {folder}")
+        public MissingFileException(string folder, string fileName) : base($"File {fileName} is missing in folder {folder}")
         {
         }
     }
