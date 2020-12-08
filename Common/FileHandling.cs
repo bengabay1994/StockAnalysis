@@ -13,6 +13,7 @@ namespace StockAnalysis.Common
     using System.Windows.Forms;
 
     using OfficeOpenXml;
+    using OfficeOpenXml.Style;
 
     using Exceptions;
 
@@ -54,6 +55,135 @@ namespace StockAnalysis.Common
             string fileName = absolutePath.Substring(splitIndex + 1, fileNameLength);
             string folderPath = absolutePath.Substring(0, folderPathLength);
             return new Tuple<string, string>(folderPath, fileName);
+        }
+
+        public static async Task CreateFavStockExcelAsync()
+        {
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+            string folderPath = Properties.Settings.Default.FavoritStocksExcelLocation;
+            string fileName = Properties.Settings.Default.FavoriteStocksExcelName;
+            string fileFullPath = string.Join("\\", folderPath, fileName);
+
+            if (string.IsNullOrEmpty(folderPath))
+            {
+                throw new MissConfigurationException(nameof(Properties.Settings.Default.FavoritStocksExcelLocation));
+            }
+            if(File.Exists(fileFullPath))
+            {
+                return;
+            }
+            
+            var excelFileInfo = new FileInfo(fileFullPath);
+
+            using (ExcelPackage excelPackage = new ExcelPackage(excelFileInfo))
+            {
+                ExcelWorksheet worksheet = excelPackage.Workbook.Worksheets.Add("Sheet1");
+
+                worksheet.Cells["A1:A2"].Merge = true;
+                worksheet.Cells["B1:B2"].Merge = true;
+                worksheet.Cells["C1:E1"].Merge = true;
+                worksheet.Cells["F1:H1"].Merge = true;
+                worksheet.Cells["I1:K1"].Merge = true;
+                worksheet.Cells["L1:N1"].Merge = true;
+                worksheet.Cells["O1:Q1"].Merge = true;
+                worksheet.Cells["R1:R2"].Merge = true;
+                worksheet.Cells["S1:S2"].Merge = true;
+                worksheet.Cells["T1:T2"].Merge = true;
+                worksheet.Cells["U1:U2"].Merge = true;
+                worksheet.Cells["V1:V2"].Merge = true;
+
+                List<string> modelThickBorderRanges = new List<string>()
+                {
+                    "A1:A10000", "A1:A2", "B1:B10000", "B1:B2", "C1:E10000", "C1:E2",
+                    "F1:H10000", "F1:H2", "I1:K10000", "I1:K2", "L1:N10000", "L1:N2",
+                    "O1:Q10000", "O1:Q2", "R1:R10000", "R1:R2", "S1:S10000", "S1:S2",
+                    "T1:T10000", "T1:T2", "U1:U10000", "U1:U2", "V1:V10000", "V1:V2",
+                };
+
+                List<string> modelBottomMediumBorderRanges = new List<string>()
+                {
+                    "C1:E1", "F1:H1", "I1:K1", "L1:N1", "O1:Q1"
+                };
+
+                WriteToCenterCell("Business Name", 1, 1, worksheet);
+                WriteToCenterCell("Symbol", 1, 2, worksheet);
+                WriteToCenterCell("ROIC", 1, 3, worksheet);
+                WriteToCenterCell("Equity", 1, 6, worksheet);
+                WriteToCenterCell("EPS", 1, 9, worksheet);
+                WriteToCenterCell("Sales", 1, 12, worksheet);
+                WriteToCenterCell("Cash or Operationg Cash", 1, 15, worksheet);
+                WriteToCenterCell("Intrinsic Value", 1, 18, worksheet);
+                WriteToCenterCell("MOS Price", 1, 19, worksheet);
+                WriteToCenterCell("Price Of Stock", 1, 20, worksheet);
+                WriteToCenterCell("Last Update", 1, 21, worksheet);
+                WriteToCenterCell("Is Cash", 1, 22, worksheet);
+
+                int[] years = {10, 5, 1};
+
+                for(int col = 3; col < 18; col++)
+                {
+                    WriteToCenterCell(years[col % 3], 2, col, worksheet);
+                }
+
+                ReSizeInitCells(worksheet);
+
+                // Formating
+
+                worksheet.Cells["U3:U10000"].Style.Numberformat.Format = "dd-mm-yyyy";
+                worksheet.Cells["C3:Q10000"].Style.Numberformat.Format = "0.00%";
+
+                var rngForColorCondition = worksheet.Cells["C3:Q10000"];
+                var condition3 = worksheet.ConditionalFormatting.AddExpression(rngForColorCondition);
+                condition3.Style.Fill.PatternType = ExcelFillStyle.Solid;
+                condition3.Style.Fill.BackgroundColor.Color = Color.Transparent;
+                condition3.Formula = "IF(ISBLANK(C3),1,0)";
+
+                var condition = worksheet.ConditionalFormatting.AddExpression(rngForColorCondition);
+                condition.Style.Fill.PatternType = ExcelFillStyle.Solid;
+                condition.Style.Fill.BackgroundColor.Color = ColorTranslator.FromHtml("#00FF00");
+                condition.Formula = "IF(C3>=0.1,1,0)";
+
+                var condition2 = worksheet.ConditionalFormatting.AddExpression(rngForColorCondition);
+                condition2.Style.Fill.PatternType = ExcelFillStyle.Solid;
+                condition2.Style.Fill.BackgroundColor.Color = Color.Red;
+                condition2.Formula = "IF(AND(C3<0.1,NOT(ISBLANK(C3))),1,0)";
+
+                // borders
+
+                rngForColorCondition.Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
+                rngForColorCondition.Style.Border.Top.Style = ExcelBorderStyle.Thin;
+                rngForColorCondition.Style.Border.Right.Style = ExcelBorderStyle.Thin;
+                rngForColorCondition.Style.Border.Left.Style = ExcelBorderStyle.Thin;
+
+                foreach (var range in modelThickBorderRanges)
+                {
+                    var modelTable = worksheet.Cells[range];
+                    modelTable.Style.Border.BorderAround(ExcelBorderStyle.Thick);
+                }
+
+                foreach (var range in modelBottomMediumBorderRanges)
+                {
+                    var modelTable = worksheet.Cells[range];
+                    modelTable.Style.Border.Bottom.Style = ExcelBorderStyle.Medium;
+                }
+
+                worksheet.Cells[2, 3].Style.Border.Right.Style = ExcelBorderStyle.Medium;
+                worksheet.Cells[2, 4].Style.Border.Right.Style = ExcelBorderStyle.Medium;
+                worksheet.Cells[2, 6].Style.Border.Right.Style = ExcelBorderStyle.Medium;
+                worksheet.Cells[2, 7].Style.Border.Right.Style = ExcelBorderStyle.Medium;
+                worksheet.Cells[2, 9].Style.Border.Right.Style = ExcelBorderStyle.Medium;
+                worksheet.Cells[2, 10].Style.Border.Right.Style = ExcelBorderStyle.Medium;
+                worksheet.Cells[2, 12].Style.Border.Right.Style = ExcelBorderStyle.Medium;
+                worksheet.Cells[2, 13].Style.Border.Right.Style = ExcelBorderStyle.Medium;
+                worksheet.Cells[2, 15].Style.Border.Right.Style = ExcelBorderStyle.Medium;
+                worksheet.Cells[2, 16].Style.Border.Right.Style = ExcelBorderStyle.Medium;
+
+                worksheet.Cells["A1:V10000"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                worksheet.Cells["A1:V10000"].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+
+                await excelPackage.SaveAsAsync(excelFileInfo);
+            }
         }
 
         private static async Task WriteToExcelAsync(IList<string> linesToWrite, string pathToFile, string fileName)
@@ -150,6 +280,24 @@ namespace StockAnalysis.Common
         private static string CreateDownloadCSVLink(string stockSymbol)
         {
             return $"https://financials.morningstar.com/ratios/r.html?t={stockSymbol}&region=usa&culture=en-US";
+        }
+
+        private static void WriteToCenterCell(object text, int row, int col, ExcelWorksheet worksheet)
+        {
+            worksheet.Cells[row, col].Value = text;
+            worksheet.Cells[row, col].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+            worksheet.Cells[row, col].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+        }
+
+        private static void ReSizeInitCells(ExcelWorksheet workSheet)
+        {
+            workSheet.Column(1).Width = 27.86;
+            workSheet.Column(2).Width = 13.57;
+            workSheet.Column(18).Width = 13.57;
+            workSheet.Column(18).Width = 13.57;
+            workSheet.Column(19).Width = 10.71;
+            workSheet.Column(20).Width = 15;
+            workSheet.Column(21).Width = 15;
         }
     }
 }

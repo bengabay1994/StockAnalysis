@@ -35,7 +35,7 @@ namespace StockAnalysis
             ChangePage(StocksEnums.Pages.CalculateIntrinsicValue);
         }
 
-        private async void b_Automate_p3_Click(object sender, EventArgs e)
+        private void b_Automate_p3_Click(object sender, EventArgs e)
         {
             ChangePage(StocksEnums.Pages.Automate);
         }
