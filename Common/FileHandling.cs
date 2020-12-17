@@ -1,27 +1,28 @@
 ﻿
 namespace StockAnalysis.Common
 {
+    using Exceptions;
+    using OfficeOpenXml;
+    using OfficeOpenXml.Style;
     using System;
-    using System.IO;
-    using System.Linq;
-    using System.Threading;
     using System.Collections.Generic;
     using System.Data;
     using System.Drawing;
+    using System.IO;
+    using System.Linq;
     using System.Text.RegularExpressions;
     using System.Threading.Tasks;
     using System.Windows.Forms;
 
-    using OfficeOpenXml;
-    using OfficeOpenXml.Style;
-
-    using Exceptions;
-
     public static class FileHandling
     {
-        private static string s_ExcelSuffix = ".xlsx";
+        private static readonly string s_UnknownStock = "Unknown";
 
-        private static string s_CsvSuffix = ".csv";
+        private static readonly string s_ExcelSuffix = ".xlsx";
+
+        private static readonly string s_CsvSuffix = ".csv";
+
+        private static readonly string s_NotAvailable = "N/A";
 
         public static async Task ConvertCsvToXlsxAsync(string pathToFile, string fileName)
         {
@@ -36,7 +37,7 @@ namespace StockAnalysis.Common
                 throw new MissingFileException(pathToFile, csvFileName);
             }
 
-            if (File.Exists(string.Join("\\",pathToFile, excelFileName)))
+            if (File.Exists(string.Join("\\", pathToFile, excelFileName)))
             {
                 File.Delete(string.Join("\\", pathToFile, excelFileName));
             }
@@ -69,11 +70,11 @@ namespace StockAnalysis.Common
             {
                 throw new MissConfigurationException(nameof(Properties.Settings.Default.FavoritStocksExcelLocation));
             }
-            if(File.Exists(fileFullPath))
+            if (File.Exists(fileFullPath))
             {
                 return;
             }
-            
+
             var excelFileInfo = new FileInfo(fileFullPath);
 
             using (ExcelPackage excelPackage = new ExcelPackage(excelFileInfo))
@@ -119,9 +120,9 @@ namespace StockAnalysis.Common
                 WriteToCenterCell("Last Update", 1, 21, worksheet);
                 WriteToCenterCell("Is Cash", 1, 22, worksheet);
 
-                int[] years = {10, 5, 1};
+                int[] years = { 10, 5, 1 };
 
-                for(int col = 3; col < 18; col++)
+                for (int col = 3; col < 18; col++)
                 {
                     WriteToCenterCell(years[col % 3], 2, col, worksheet);
                 }
@@ -213,13 +214,50 @@ namespace StockAnalysis.Common
 
                 while (true)
                 {
-                    if(string.IsNullOrWhiteSpace(ws.Cells[line, 2].Value.ToString()) || string.Equals(symbol, ws.Cells[line, 2].Value.ToString(), StringComparison.OrdinalIgnoreCase))
+                    if (string.IsNullOrWhiteSpace(ws.Cells[line, 2].Value.ToString()) || (symbol.Equals(ws.Cells[line, 2].Value.ToString(), StringComparison.OrdinalIgnoreCase) && !symbol.Equals(s_UnknownStock, StringComparison.OrdinalIgnoreCase)))
                     {
                         return line;
                     }
 
                     line++;
                 }
+            }
+        }
+
+        public static async Task SaveStockAsync(Dictionary<StocksEnums.GrowthNumbersDicKey, IList<string>> bigGrowths, string symbol)
+        {
+            int lineToSave = 0;
+
+            if (symbol.Equals(s_NotAvailable, StringComparison.OrdinalIgnoreCase))
+            {
+                lineToSave = FindLineToSaveIn(s_UnknownStock);
+            }
+            else
+            {
+                lineToSave = FindLineToSaveIn(symbol);
+            }
+        }
+
+        private static async Task WriteGrowthToExcelAsync(ExcelWorksheet workSheet, StocksEnums.GrowthNumbersDicKey growthKind, IList<string> growthNumbers, int lineToWrite)
+        {
+            switch (growthKind)
+            {
+                case StocksEnums.GrowthNumbersDicKey.Roic:
+                    // 3-5
+                    break;
+                case StocksEnums.GrowthNumbersDicKey.BookValue:
+                    // 6-8
+                    break;
+                case StocksEnums.GrowthNumbersDicKey.Eps:
+                    // 9-11
+                    break;
+                case StocksEnums.GrowthNumbersDicKey.Revenue:
+                    // 12-14
+                    break;
+                case StocksEnums.GrowthNumbersDicKey.OperatingCashFlow:
+                case StocksEnums.GrowthNumbersDicKey.FreeCashFlow:
+                    // 15-17
+                    break;
             }
         }
 

@@ -11,6 +11,12 @@ namespace StockAnalysis.UserControls
 
     public partial class p1_CalculateStockData_UI : UserControl
     {
+        private Dictionary<StocksEnums.BigFiveNumbersDicKey, IList<string>> m_BigFive;
+
+        private Dictionary<StocksEnums.GrowthNumbersDicKey, IList<string>> m_BigGrowths;
+
+        private string m_Symbol;
+
         public p1_CalculateStockData_UI()
         {
             InitializeComponent();
@@ -33,8 +39,7 @@ namespace StockAnalysis.UserControls
 
         private async void b_GetLocalData_Click(object sender, EventArgs e)
         {
-            Dictionary<StocksEnums.BigFiveNumbersDicKey, IList<string>> BigFive;
-            Dictionary<StocksEnums.GrowthNumbersDicKey, IList<string>> BigGrowths;
+            string stockSymbol = tb_Symbol.Text;
 
             if (cb_UseSettingStockData.Checked)
             {
@@ -44,7 +49,6 @@ namespace StockAnalysis.UserControls
                     MessageBox.Show("Please choose a valid settings in the setting tab for the data files location", "Invalid Settings", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
-                string stockSymbol = tb_Symbol.Text;
                 if (!stockSymbol.All(Char.IsLetter))
                 {
                     MessageBox.Show("Please Enter a Valid Stock Symbol", "Wrong Symbol", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -56,16 +60,17 @@ namespace StockAnalysis.UserControls
                 try
                 {
                     await FileHandling.ConvertCsvToXlsxAsync(folderPath, fileName).ConfigureAwait(false);
-                    (BigFive, BigGrowths) = await GetDataAndNumbers.GetStockDataAsync(filePath, folderPath, fileName).ConfigureAwait(false);
+                    (m_BigFive, m_BigGrowths) = await GetDataAndNumbers.GetStockDataAsync(filePath, folderPath, fileName).ConfigureAwait(false);
+                    m_Symbol = stockSymbol;
                     if (this.tableLayoutPanel1.InvokeRequired)
                     {
                         this.tableLayoutPanel1.Invoke(new MethodInvoker(delegate {
-                            GetDataAndNumbers.ShowStockData(ref BigFive, ref BigGrowths, this.tableLayoutPanel1);
+                            GetDataAndNumbers.ShowStockData(ref m_BigFive, ref m_BigGrowths, this.tableLayoutPanel1);
                         }));
                     }
                     else
                     {
-                        GetDataAndNumbers.ShowStockData(ref BigFive, ref BigGrowths, this.tableLayoutPanel1);
+                        GetDataAndNumbers.ShowStockData(ref m_BigFive, ref m_BigGrowths, this.tableLayoutPanel1);
                     }
 
                 }
@@ -96,18 +101,31 @@ namespace StockAnalysis.UserControls
                     try
                     {
                         string folderPath, fileName;
+
                         (folderPath, fileName) = FileHandling.SplitToNameAndPath(filePath);
+
                         await FileHandling.ConvertCsvToXlsxAsync(folderPath, fileName).ConfigureAwait(false);
-                        (BigFive, BigGrowths) =  await GetDataAndNumbers.GetStockDataAsync(filePath, folderPath, fileName).ConfigureAwait(false);
+
+                        (m_BigFive, m_BigGrowths) =  await GetDataAndNumbers.GetStockDataAsync(filePath, folderPath, fileName).ConfigureAwait(false);
+
+                        if (string.IsNullOrWhiteSpace(stockSymbol) || !stockSymbol.All(Char.IsLetter))
+                        {
+                            m_Symbol = "N/A";
+                        }
+                        else
+                        {
+                            m_Symbol = stockSymbol;
+                        }
+
                         if (this.tableLayoutPanel1.InvokeRequired)
                         {
                             this.tableLayoutPanel1.Invoke( new MethodInvoker(delegate {
-                                GetDataAndNumbers.ShowStockData(ref BigFive, ref BigGrowths, this.tableLayoutPanel1);
+                                GetDataAndNumbers.ShowStockData(ref m_BigFive, ref m_BigGrowths, this.tableLayoutPanel1);
                             }));
                         }
                         else
                         {
-                            GetDataAndNumbers.ShowStockData(ref BigFive, ref BigGrowths, this.tableLayoutPanel1);
+                            GetDataAndNumbers.ShowStockData(ref m_BigFive, ref m_BigGrowths, this.tableLayoutPanel1);
                         }
 
                     }
